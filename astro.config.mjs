@@ -3,7 +3,7 @@ import { defineConfig } from "astro/config";
 import { codeTitleTransformer } from "./src/lib/shiki-code-title";
 
 export default defineConfig({
-  site: "https://hupham.github.io",
+  site: "https://hungp29.github.io",
   integrations: [sitemap()],
   markdown: {
     syntaxHighlight: "shiki",
