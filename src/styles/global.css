@@ -510,6 +510,116 @@ a:hover {
   font-size: 0.88rem;
 }
 
+.redirect-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 2rem;
+}
+
+.redirect-card {
+  width: min(100%, 520px);
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: var(--bg-card);
+  padding: 2rem;
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.redirect-eyebrow {
+  margin: 0 0 0.75rem;
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.redirect-card h1 {
+  margin: 0 0 1rem;
+  font-size: clamp(2rem, 8vw, 3.25rem);
+  letter-spacing: -0.08em;
+  line-height: 0.98;
+}
+
+.redirect-card p:last-child {
+  margin: 0;
+  color: var(--muted);
+}
+
+.error-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 4rem 0 3rem;
+}
+
+.error-code {
+  margin: 0 0 0.75rem;
+  color: var(--accent);
+  font-size: clamp(3rem, 10vw, 5rem);
+  font-weight: 800;
+  letter-spacing: -0.08em;
+  line-height: 1;
+}
+
+.error-copy-vi {
+  display: none;
+}
+
+:root[data-error-lang="vi"] .error-copy-en {
+  display: none;
+}
+
+:root[data-error-lang="vi"] .error-copy-vi {
+  display: block;
+}
+
+.error-page h1 {
+  margin: 0 0 1rem;
+  max-width: 760px;
+  font-size: clamp(2rem, 6vw, 3rem);
+  letter-spacing: -0.06em;
+  line-height: 1.05;
+}
+
+.error-message {
+  margin: 0 0 0.75rem;
+  max-width: 680px;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.5rem 0 1rem;
+}
+
+.error-action {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-card);
+  color: var(--text);
+  font-weight: 700;
+  padding: 0.55rem 1rem;
+  text-decoration: none;
+}
+
+.error-action:hover,
+.error-action:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.error-hint {
+  margin: 0;
+  max-width: 680px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
 .hero {
   padding: 4rem 0 2rem;
 }

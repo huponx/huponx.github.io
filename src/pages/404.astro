@@ -1,0 +1,71 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { defaultLang } from "@/lib/i18n";
+---
+
+<BaseLayout
+  lang={defaultLang}
+  title="Page not found"
+  description="The page you requested does not exist or may have been moved."
+  languageSwitchHref="/vi/"
+>
+  <script is:inline>
+    (() => {
+      const path = window.location.pathname;
+      const isVi = path === "/vi" || path.startsWith("/vi/");
+      document.documentElement.dataset.errorLang = isVi ? "vi" : "en";
+      document.documentElement.lang = isVi ? "vi" : "en";
+    })();
+  </script>
+
+  <section class="error-page" aria-label="404">
+    <p class="error-code" aria-hidden="true">404</p>
+
+    <div class="error-copy error-copy-en" lang="en">
+      <h1>Page not found</h1>
+      <p class="error-message">
+        The page you are looking for does not exist. It may have been moved, renamed, or
+        removed.
+      </p>
+      <div class="error-actions">
+        <a class="error-action" href="/en/">Go to home</a>
+      </div>
+      <p class="error-hint">
+        You can also use the search box in the header to find a post.
+      </p>
+    </div>
+
+    <div class="error-copy error-copy-vi" lang="vi">
+      <h1>Không tìm thấy trang</h1>
+      <p class="error-message">
+        Không tìm thấy trang bạn yêu cầu. Trang có thể đã được chuyển, đổi tên, hoặc đã bị
+        gỡ.
+      </p>
+      <div class="error-actions">
+        <a class="error-action" href="/vi/">Về trang chủ</a>
+      </div>
+      <p class="error-hint">
+        Bạn cũng có thể dùng ô tìm kiếm trên header để tìm bài viết.
+      </p>
+    </div>
+  </section>
+
+  <script is:inline>
+    (() => {
+      const path = window.location.pathname;
+      const isVi = path === "/vi" || path.startsWith("/vi/");
+      const langToggle = document.querySelector(".lang-toggle");
+
+      if (langToggle instanceof HTMLAnchorElement) {
+        langToggle.href = isVi ? "/en/" : "/vi/";
+        langToggle.setAttribute(
+          "aria-label",
+          isVi ? "Switch to English" : "Switch to Tiếng Việt",
+        );
+        langToggle.setAttribute("title", langToggle.getAttribute("aria-label") ?? "");
+        const label = langToggle.querySelector("span");
+        if (label) label.textContent = isVi ? "EN" : "VI";
+      }
+    })();
+  </script>
+</BaseLayout>

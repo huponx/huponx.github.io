@@ -1,5 +1,6 @@
 ---
 import { defaultLang } from "@/lib/i18n";
+import "../styles/global.css";
 ---
 
 <!doctype html>
@@ -9,11 +10,29 @@ import { defaultLang } from "@/lib/i18n";
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Redirecting</title>
     <meta http-equiv="refresh" content={`0; url=/${defaultLang}/`} />
+    <script is:inline>
+      (() => {
+        try {
+          const theme = localStorage.getItem("theme");
+          if (theme === "light" || theme === "dark") {
+            document.documentElement.dataset.theme = theme;
+          }
+        } catch {
+          document.documentElement.removeAttribute("data-theme");
+        }
+      })();
+    </script>
   </head>
   <body>
-    <p>
-      English is the default language. Continue to
-      <a href={`/${defaultLang}/`}>/{defaultLang}/</a>.
-    </p>
+    <main class="redirect-page">
+      <section class="redirect-card" aria-labelledby="redirect-title">
+        <p class="redirect-eyebrow">Redirecting</p>
+        <h1 id="redirect-title">Taking you to Hung Blog</h1>
+        <p>
+          English is the default language. Continue to
+          <a href={`/${defaultLang}/`}>/{defaultLang}/</a>.
+        </p>
+      </section>
+    </main>
   </body>
 </html>
