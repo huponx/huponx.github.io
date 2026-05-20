@@ -1,0 +1,16 @@
+{
+  "name": "hungp29.github.io",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@astrojs/sitemap": "^3.7.2",
+    "astro": "^6.0.5",
+    "typescript": "^5.9.3"
+  }
+}

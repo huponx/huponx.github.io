@@ -1,0 +1,66 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+  blogPath,
+  categoryLabels,
+  categoryPath,
+  findTranslation,
+  languageNames,
+  tagPath,
+  type BlogPost,
+  ui,
+} from "@/lib/i18n";
+
+interface Props {
+  post: BlogPost;
+  posts: BlogPost[];
+}
+
+const { post, posts } = Astro.props;
+const lang = post.data.lang;
+const labels = ui[lang];
+const translation = findTranslation(post, posts);
+const otherLang = lang === "en" ? "vi" : "en";
+---
+
+<BaseLayout title={post.data.title} description={post.data.description} lang={lang}>
+  <article class="post">
+    <a class="back-link" href={`/${lang}/`}>{labels.backToPosts}</a>
+
+    <header class="post-header">
+      <p class="eyebrow">
+        <a href={categoryPath(lang, post.data.category)}>
+          {categoryLabels[lang][post.data.category]}
+        </a>
+      </p>
+      <h1>{post.data.title}</h1>
+      <p class="description">{post.data.description}</p>
+      <div class="post-meta">
+        <span>{labels.publishedOn} {post.data.pubDate.toLocaleDateString(lang)}</span>
+        <span>{labels.availableIn}: {languageNames[lang]}</span>
+      </div>
+      <div class="language-switcher" aria-label="Language switcher">
+        {
+          translation ? (
+            <a href={blogPath(translation)}>{languageNames[translation.data.lang]}</a>
+          ) : (
+            <span class="disabled">{labels.unavailable}</span>
+          )
+        }
+        <a href={`/${otherLang}/`}>{languageNames[otherLang]} home</a>
+      </div>
+    </header>
+
+    <div class="content">
+      <slot />
+    </div>
+
+    <footer class="tag-list" aria-label="Post tags">
+      {
+        post.data.tags.map((tag) => (
+          <a href={tagPath(lang, tag)}>#{tag}</a>
+        ))
+      }
+    </footer>
+  </article>
+</BaseLayout>

@@ -1,0 +1,47 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+  categoryLabels,
+  categoryPath,
+  languages,
+  postsByCategory,
+  type Lang,
+  ui,
+  uniqueCategories,
+} from "@/lib/i18n";
+
+export function getStaticPaths() {
+  return languages.map((lang) => ({
+    params: { lang },
+    props: { lang },
+  }));
+}
+
+const lang = Astro.props.lang as Lang;
+const labels = ui[lang];
+const posts = await getCollection("blog");
+const categories = uniqueCategories(posts, lang);
+---
+
+<BaseLayout lang={lang} title={labels.allCategories}>
+  <section class="hero">
+    <h1>{labels.allCategories}</h1>
+    <p>{labels.siteDescription}</p>
+  </section>
+
+  <section class="category-list" aria-label={labels.allCategories}>
+    {
+      categories.map((category) => (
+        <article class="category-card">
+          <h2>
+            <a href={categoryPath(lang, category)}>
+              {categoryLabels[lang][category]}
+            </a>
+          </h2>
+          <p>{postsByCategory(posts, lang, category).length} posts</p>
+        </article>
+      ))
+    }
+  </section>
+</BaseLayout>

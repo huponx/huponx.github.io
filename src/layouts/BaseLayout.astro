@@ -1,0 +1,54 @@
+---
+import "../styles/global.css";
+import { defaultLang, languageNames, type Lang, ui } from "@/lib/i18n";
+
+interface Props {
+  title?: string;
+  description?: string;
+  lang?: Lang;
+}
+
+const lang = Astro.props.lang ?? defaultLang;
+const labels = ui[lang];
+const title = Astro.props.title
+  ? `${Astro.props.title} | ${labels.siteTitle}`
+  : labels.siteTitle;
+const description = Astro.props.description ?? labels.siteDescription;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav container" aria-label="Primary navigation">
+        <a class="brand" href={`/${lang}/`}>{labels.siteTitle}</a>
+        <div class="nav-links">
+          <a href={`/${lang}/`}>{labels.home}</a>
+          <a href={`/${lang}/categories/`}>{labels.categories}</a>
+          {
+            Object.entries(languageNames).map(([code, name]) => (
+              <a class={code === lang ? "active" : ""} href={`/${code}/`}>
+                {name}
+              </a>
+            ))
+          }
+        </div>
+      </nav>
+    </header>
+
+    <main class="container">
+      <slot />
+    </main>
+
+    <footer class="site-footer container">
+      <p>{labels.siteDescription}</p>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,42 @@
+---
+import { getCollection } from "astro:content";
+import PostCard from "@/components/PostCard.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+  categoryLabels,
+  languages,
+  postsByCategory,
+  sortPosts,
+  type Category,
+  type Lang,
+  ui,
+  uniqueCategories,
+} from "@/lib/i18n";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+
+  return languages.flatMap((lang) =>
+    uniqueCategories(posts, lang).map((category) => ({
+      params: { lang, category },
+      props: { category, lang, posts },
+    })),
+  );
+}
+
+const lang = Astro.props.lang as Lang;
+const category = Astro.props.category as Category;
+const labels = ui[lang];
+const posts = sortPosts(postsByCategory(Astro.props.posts, lang, category));
+---
+
+<BaseLayout lang={lang} title={categoryLabels[lang][category]}>
+  <section class="hero">
+    <p class="eyebrow">{labels.postsInCategory}</p>
+    <h1>{categoryLabels[lang][category]}</h1>
+  </section>
+
+  <section class="post-grid" aria-label={categoryLabels[lang][category]}>
+    {posts.map((post) => <PostCard post={post} />)}
+  </section>
+</BaseLayout>

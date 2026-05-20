@@ -1,0 +1,40 @@
+---
+import {
+  blogPath,
+  categoryLabels,
+  categoryPath,
+  tagPath,
+  type BlogPost,
+  type Lang,
+  ui,
+} from "@/lib/i18n";
+
+interface Props {
+  post: BlogPost;
+}
+
+const { post } = Astro.props;
+const lang = post.data.lang as Lang;
+const labels = ui[lang];
+---
+
+<article class="post-card">
+  <div class="post-card-meta">
+    <a href={categoryPath(lang, post.data.category)}>
+      {categoryLabels[lang][post.data.category]}
+    </a>
+    <span>{post.data.pubDate.toLocaleDateString(lang)}</span>
+  </div>
+  <h2>
+    <a href={blogPath(post)}>{post.data.title}</a>
+  </h2>
+  <p>{post.data.description}</p>
+  <div class="tag-list">
+    {
+      post.data.tags.map((tag) => (
+        <a href={tagPath(lang, tag)}>#{tag}</a>
+      ))
+    }
+  </div>
+  <a class="read-more" href={blogPath(post)}>{labels.readMore}</a>
+</article>
