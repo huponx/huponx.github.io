@@ -26,9 +26,16 @@ const lang = post.data.lang;
 const labels = ui[lang];
 const translation = findTranslation(post, posts);
 const hasToc = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3).length >= 2;
+const languageSwitchHref = translation ? blogPath(translation) : undefined;
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description} lang={lang} wide>
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  lang={lang}
+  wide
+  languageSwitchHref={languageSwitchHref}
+>
   <div class="post-layout">
     <article
       class="post"

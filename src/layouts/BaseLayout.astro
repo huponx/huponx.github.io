@@ -17,6 +17,7 @@ interface Props {
   description?: string;
   lang?: Lang;
   wide?: boolean;
+  languageSwitchHref?: string;
 }
 
 const lang = Astro.props.lang ?? defaultLang;
@@ -27,6 +28,7 @@ const title = Astro.props.title
   : labels.siteTitle;
 const description = Astro.props.description ?? labels.siteDescription;
 const otherLang = lang === "en" ? "vi" : "en";
+const languageSwitchHref = Astro.props.languageSwitchHref ?? `/${otherLang}/`;
 
 const allPosts = await getCollection("blog");
 const langPosts = postsByLang(allPosts, lang);
@@ -154,7 +156,7 @@ const searchPosts = langPosts.map((post) => ({
           </button>
           <a
             class="lang-toggle"
-            href={`/${otherLang}/`}
+            href={languageSwitchHref}
             aria-label={`Switch to ${languageNames[otherLang]}`}
             title={`Switch to ${languageNames[otherLang]}`}
           >
