@@ -25,61 +25,72 @@ const { post, posts, headings = [] } = Astro.props;
 const lang = post.data.lang;
 const labels = ui[lang];
 const translation = findTranslation(post, posts);
+const hasToc = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3).length >= 2;
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description} lang={lang}>
-  <article
-    class="post"
-    data-code-copy-label={labels.copyCode}
-    data-code-copied-label={labels.copiedCode}
-    data-code-copy-failed-label={labels.copyCodeFailed}
-  >
-    <a class="back-link" href={`/${lang}/`}>{labels.backToPosts}</a>
+<BaseLayout title={post.data.title} description={post.data.description} lang={lang} wide>
+  <div class="post-layout">
+    <article
+      class="post"
+      data-code-copy-label={labels.copyCode}
+      data-code-copied-label={labels.copiedCode}
+      data-code-copy-failed-label={labels.copyCodeFailed}
+    >
+      <a class="back-link" href={`/${lang}/`}>{labels.backToPosts}</a>
 
-    <header class="post-header">
-      <p class="eyebrow">
-        <a href={categoryPath(lang, post.data.category)}>
-          {categoryLabels[lang][post.data.category]}
-        </a>
-      </p>
-      <h1>{post.data.title}</h1>
-      <p class="description">{post.data.description}</p>
-      <div class="post-header-meta">
-        <div class="post-meta">
-          <span>{labels.publishedOn} {post.data.pubDate.toLocaleDateString(lang)}</span>
+      <header class="post-header">
+        <p class="eyebrow">
+          <a href={categoryPath(lang, post.data.category)}>
+            {categoryLabels[lang][post.data.category]}
+          </a>
+        </p>
+        <h1>{post.data.title}</h1>
+        <p class="description">{post.data.description}</p>
+        <div class="post-header-meta">
+          <div class="post-meta">
+            <span>{labels.publishedOn} {post.data.pubDate.toLocaleDateString(lang)}</span>
+          </div>
+          <div class="language-switcher" aria-label="Language switcher">
+            {
+              translation ? (
+                <a href={blogPath(translation)}>
+                  {labels.availableIn}: {languageNames[translation.data.lang]}
+                </a>
+              ) : (
+                <span class="disabled">{labels.unavailable}</span>
+              )
+            }
+          </div>
         </div>
-        <div class="language-switcher" aria-label="Language switcher">
-          {
-            translation ? (
-              <a href={blogPath(translation)}>
-                {labels.availableIn}: {languageNames[translation.data.lang]}
-              </a>
-            ) : (
-              <span class="disabled">{labels.unavailable}</span>
-            )
-          }
-        </div>
+      </header>
+
+      {hasToc && <TableOfContents headings={headings} lang={lang} variant="mobile" />}
+
+      <div class="content">
+        <slot />
       </div>
-    </header>
 
-    <TableOfContents headings={headings} lang={lang} />
+      <SeriesBlock post={post} posts={posts} />
 
-    <div class="content">
-      <slot />
-    </div>
+      <footer class="tag-list" aria-label="Post tags">
+        {
+          post.data.tags.map((tag) => (
+            <a href={tagPath(lang, tag)}>#{tag}</a>
+          ))
+        }
+      </footer>
 
-    <SeriesBlock post={post} posts={posts} />
+      <PostNavigation post={post} posts={posts} />
+    </article>
 
-    <footer class="tag-list" aria-label="Post tags">
-      {
-        post.data.tags.map((tag) => (
-          <a href={tagPath(lang, tag)}>#{tag}</a>
-        ))
-      }
-    </footer>
-
-    <PostNavigation post={post} posts={posts} />
-  </article>
+    {
+      hasToc && (
+        <aside class="post-toc-sidebar">
+          <TableOfContents headings={headings} lang={lang} variant="desktop" />
+        </aside>
+      )
+    }
+  </div>
 
   <button
     class="go-to-top"

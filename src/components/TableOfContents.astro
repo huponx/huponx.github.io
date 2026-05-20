@@ -6,9 +6,10 @@ import { ui } from "@/lib/i18n";
 interface Props {
   headings: MarkdownHeading[];
   lang: Lang;
+  variant?: "mobile" | "desktop";
 }
 
-const { headings, lang } = Astro.props;
+const { headings, lang, variant = "mobile" } = Astro.props;
 const labels = ui[lang];
 
 const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3);
@@ -18,17 +19,30 @@ if (tocHeadings.length < 2) {
 }
 ---
 
-<nav class="toc" aria-label={labels.tableOfContents}>
-  <details class="toc-details">
-    <summary class="toc-summary">{labels.tableOfContents}</summary>
-    <ol class="toc-list">
-      {
-        tocHeadings.map((heading) => (
-          <li class={`toc-item depth-${heading.depth}`}>
-            <a href={`#${heading.slug}`}>{heading.text}</a>
-          </li>
-        ))
-      }
-    </ol>
-  </details>
+<nav class={`toc toc-${variant}`} aria-label={labels.tableOfContents}>
+  {
+    variant === "mobile" ? (
+      <details class="toc-details">
+        <summary class="toc-summary">{labels.tableOfContents}</summary>
+        <ol class="toc-list">
+          {tocHeadings.map((heading) => (
+            <li class={`toc-item depth-${heading.depth}`}>
+              <a href={`#${heading.slug}`}>{heading.text}</a>
+            </li>
+          ))}
+        </ol>
+      </details>
+    ) : (
+      <div class="toc-panel">
+        <h2>{labels.tableOfContents}</h2>
+        <ol class="toc-list">
+          {tocHeadings.map((heading) => (
+            <li class={`toc-item depth-${heading.depth}`}>
+              <a href={`#${heading.slug}`}>{heading.text}</a>
+            </li>
+          ))}
+        </ol>
+      </div>
+    )
+  }
 </nav>

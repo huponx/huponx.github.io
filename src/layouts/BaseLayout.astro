@@ -16,9 +16,11 @@ interface Props {
   title?: string;
   description?: string;
   lang?: Lang;
+  wide?: boolean;
 }
 
 const lang = Astro.props.lang ?? defaultLang;
+const wide = Astro.props.wide ?? false;
 const labels = ui[lang];
 const title = Astro.props.title
   ? `${Astro.props.title} | ${labels.siteTitle}`
@@ -167,7 +169,7 @@ const searchPosts = langPosts.map((post) => ({
       </nav>
     </header>
 
-    <main class="container">
+    <main class:list={["container", { "container-wide": wide }]}>
       <div class="site-layout">
         <aside class="site-sidebar" id="site-sidebar" data-site-sidebar>
           <CategorySidebar posts={langPosts} lang={lang} />

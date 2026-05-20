@@ -105,6 +105,10 @@ a:hover {
   margin-inline: auto;
 }
 
+.container-wide {
+  width: min(100% - 2rem, 1360px);
+}
+
 .site-layout {
   display: grid;
   grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
@@ -606,6 +610,14 @@ a:hover {
   padding: 3rem 0 4rem;
 }
 
+.post-layout {
+  min-width: 0;
+}
+
+.post-toc-sidebar {
+  display: none;
+}
+
 .go-to-top {
   position: fixed;
   right: 1.25rem;
@@ -676,10 +688,30 @@ a:hover {
   margin-bottom: 1.25rem;
 }
 
+.toc-desktop {
+  display: none;
+}
+
 .toc-details {
   border: 1px dashed var(--border);
   border-radius: 0.8rem;
   background: color-mix(in srgb, var(--bg-card) 82%, transparent);
+}
+
+.toc-panel {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--bg-card);
+}
+
+.toc-panel h2 {
+  margin: 0;
+  padding: 0.85rem 1rem 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .toc-summary {
@@ -743,6 +775,35 @@ a:hover {
 .toc-item.depth-3 a:hover,
 .toc-item.depth-3 a:focus-visible {
   color: var(--accent);
+}
+
+@media (min-width: 1320px) {
+  .post-layout:has(.post-toc-sidebar) {
+    display: grid;
+    grid-template-columns: minmax(0, 760px) minmax(200px, 240px);
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .post-layout:has(.post-toc-sidebar) .post {
+    min-width: 0;
+  }
+
+  .post-toc-sidebar {
+    display: block;
+    position: sticky;
+    top: 1rem;
+  }
+
+  .toc-mobile {
+    display: none;
+  }
+
+  .toc-desktop {
+    display: block;
+    max-width: none;
+    margin: 0;
+  }
 }
 
 .post-navigation {

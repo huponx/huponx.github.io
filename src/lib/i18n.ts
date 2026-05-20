@@ -124,6 +124,7 @@ export function formatPostCount(lang: Lang, count: number) {
 
 export const categoryLabels = {
   en: {
+    claude: "Claude",
     "web-development": "Web Development",
     programming: "Programming",
     devops: "DevOps",
@@ -132,6 +133,7 @@ export const categoryLabels = {
     notes: "Notes",
   },
   vi: {
+    claude: "Claude",
     "web-development": "Web Development",
     programming: "Lập trình",
     devops: "DevOps",
