@@ -7,17 +7,8 @@ import { defaultLang } from "@/lib/i18n";
   lang={defaultLang}
   title="Page not found"
   description="The page you requested does not exist or may have been moved."
-  languageSwitchHref="/vi/"
+  detectLangFromPath
 >
-  <script is:inline>
-    (() => {
-      const path = window.location.pathname;
-      const isVi = path === "/vi" || path.startsWith("/vi/");
-      document.documentElement.dataset.errorLang = isVi ? "vi" : "en";
-      document.documentElement.lang = isVi ? "vi" : "en";
-    })();
-  </script>
-
   <section class="error-page" aria-label="404">
     <p class="error-code" aria-hidden="true">404</p>
 
@@ -49,23 +40,4 @@ import { defaultLang } from "@/lib/i18n";
       </p>
     </div>
   </section>
-
-  <script is:inline>
-    (() => {
-      const path = window.location.pathname;
-      const isVi = path === "/vi" || path.startsWith("/vi/");
-      const langToggle = document.querySelector(".lang-toggle");
-
-      if (langToggle instanceof HTMLAnchorElement) {
-        langToggle.href = isVi ? "/en/" : "/vi/";
-        langToggle.setAttribute(
-          "aria-label",
-          isVi ? "Switch to English" : "Switch to Tiếng Việt",
-        );
-        langToggle.setAttribute("title", langToggle.getAttribute("aria-label") ?? "");
-        const label = langToggle.querySelector("span");
-        if (label) label.textContent = isVi ? "EN" : "VI";
-      }
-    })();
-  </script>
 </BaseLayout>

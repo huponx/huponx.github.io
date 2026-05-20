@@ -7,6 +7,7 @@ import {
   categoryLabels,
   defaultLang,
   languageNames,
+  languages,
   postsByLang,
   type Lang,
   ui,
@@ -18,10 +19,12 @@ interface Props {
   lang?: Lang;
   wide?: boolean;
   languageSwitchHref?: string;
+  detectLangFromPath?: boolean;
 }
 
 const lang = Astro.props.lang ?? defaultLang;
 const wide = Astro.props.wide ?? false;
+const detectLangFromPath = Astro.props.detectLangFromPath ?? false;
 const labels = ui[lang];
 const title = Astro.props.title
   ? `${Astro.props.title} | ${labels.siteTitle}`
@@ -31,23 +34,32 @@ const otherLang = lang === "en" ? "vi" : "en";
 const languageSwitchHref = Astro.props.languageSwitchHref ?? `/${otherLang}/`;
 
 const allPosts = await getCollection("blog");
-const langPosts = postsByLang(allPosts, lang);
-const searchPosts = langPosts.map((post) => ({
-  title: post.data.title,
-  description: post.data.description,
-  category: categoryLabels[lang][post.data.category],
-  tags: post.data.tags,
-  url: blogPath(post),
-  text: [
-    post.data.title,
-    post.data.description,
-    post.data.category,
-    categoryLabels[lang][post.data.category],
-    ...post.data.tags,
-  ]
-    .join(" ")
-    .toLowerCase(),
-}));
+const postsByPageLang = Object.fromEntries(
+  languages.map((pageLang) => [pageLang, postsByLang(allPosts, pageLang)]),
+) as Record<Lang, ReturnType<typeof postsByLang>>;
+const langPosts = postsByPageLang[lang];
+const searchPostsByLang = Object.fromEntries(
+  languages.map((pageLang) => [
+    pageLang,
+    postsByPageLang[pageLang].map((post) => ({
+      title: post.data.title,
+      description: post.data.description,
+      category: categoryLabels[pageLang][post.data.category],
+      tags: post.data.tags,
+      url: blogPath(post),
+      text: [
+        post.data.title,
+        post.data.description,
+        post.data.category,
+        categoryLabels[pageLang][post.data.category],
+        ...post.data.tags,
+      ]
+        .join(" ")
+        .toLowerCase(),
+    })),
+  ]),
+) as Record<Lang, unknown[]>;
+const searchPosts = searchPostsByLang[lang];
 ---
 
 <!doctype html>
@@ -77,6 +89,20 @@ const searchPosts = langPosts.map((post) => ({
         }
       })();
     </script>
+    {
+      detectLangFromPath && (
+        <script is:inline>
+          {`
+            (() => {
+              const path = window.location.pathname;
+              const lang = path === "/vi" || path.startsWith("/vi/") ? "vi" : "en";
+              document.documentElement.dataset.pageLang = lang;
+              document.documentElement.lang = lang;
+            })();
+          `}
+        </script>
+      )
+    }
     <title>{title}</title>
   </head>
   <body>
@@ -93,18 +119,20 @@ const searchPosts = langPosts.map((post) => ({
             <svg aria-hidden="true" viewBox="0 0 24 24">
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-            <span class="sr-only">{labels.sidebarToggle}</span>
+            <span class="sr-only" data-sidebar-toggle-text>{labels.sidebarToggle}</span>
           </button>
           <a class="brand" href={`/${lang}/`}>{labels.siteTitle}</a>
         </div>
         <div class="nav-links">
-          <a href={`/${lang}/`}>{labels.home}</a>
-          <a href={`/${lang}/categories/`}>{labels.categories}</a>
-          <a href={`/${lang}/series/`}>{labels.series}</a>
+          <a href={`/${lang}/`} data-home-link>{labels.home}</a>
+          <a href={`/${lang}/categories/`} data-categories-link>{labels.categories}</a>
+          <a href={`/${lang}/series/`} data-series-link>{labels.series}</a>
           <div
             class="site-search"
             data-search-root
             data-empty={labels.searchNoResults}
+            data-empty-en={ui.en.searchNoResults}
+            data-empty-vi={ui.vi.searchNoResults}
           >
             <label class="site-search-label" for="site-search-input">
               <span class="sr-only">{labels.searchLabel}</span>
@@ -120,6 +148,8 @@ const searchPosts = langPosts.map((post) => ({
                 autocomplete="off"
                 spellcheck="false"
                 placeholder={labels.searchPlaceholder}
+                data-placeholder-en={ui.en.searchPlaceholder}
+                data-placeholder-vi={ui.vi.searchPlaceholder}
               />
             </label>
             <div
@@ -135,9 +165,17 @@ const searchPosts = langPosts.map((post) => ({
             data-theme-toggle
             data-theme-mode="auto"
             data-label-switch={labels.switchTheme}
+            data-label-switch-en={ui.en.switchTheme}
+            data-label-switch-vi={ui.vi.switchTheme}
             data-label-auto={labels.themeAuto}
+            data-label-auto-en={ui.en.themeAuto}
+            data-label-auto-vi={ui.vi.themeAuto}
             data-label-light={labels.themeLight}
+            data-label-light-en={ui.en.themeLight}
+            data-label-light-vi={ui.vi.themeLight}
             data-label-dark={labels.themeDark}
+            data-label-dark-en={ui.en.themeDark}
+            data-label-dark-vi={ui.vi.themeDark}
             aria-label={labels.switchTheme}
             title={labels.switchTheme}
           >
@@ -174,7 +212,20 @@ const searchPosts = langPosts.map((post) => ({
     <main class:list={["container", { "container-wide": wide }]}>
       <div class="site-layout">
         <aside class="site-sidebar" id="site-sidebar" data-site-sidebar>
-          <CategorySidebar posts={langPosts} lang={lang} />
+          {
+            detectLangFromPath ? (
+              <>
+                <div class="language-panel language-panel-en">
+                  <CategorySidebar posts={postsByPageLang.en} lang="en" />
+                </div>
+                <div class="language-panel language-panel-vi">
+                  <CategorySidebar posts={postsByPageLang.vi} lang="vi" />
+                </div>
+              </>
+            ) : (
+              <CategorySidebar posts={langPosts} lang={lang} />
+            )
+          }
         </aside>
         <div class="site-main">
           <slot />
@@ -183,17 +234,126 @@ const searchPosts = langPosts.map((post) => ({
     </main>
 
     <footer class="site-footer container">
-      <p>{labels.siteDescription}</p>
+      <p data-site-description>{labels.siteDescription}</p>
     </footer>
 
     <script
       is:inline
       type="application/json"
       id="site-search-data"
-      set:html={JSON.stringify(searchPosts)}
+      data-multilang={detectLangFromPath ? "true" : undefined}
+      data-detect-lang={detectLangFromPath ? "true" : undefined}
+      set:html={JSON.stringify(detectLangFromPath ? searchPostsByLang : searchPosts)}
     />
     <script is:inline>
       const MAX_RESULTS = 6;
+      const DETECT_LANG_FROM_PATH =
+        document.getElementById("site-search-data")?.dataset.detectLang === "true";
+      const UI_LABELS = {
+        en: {
+          home: "Home",
+          categories: "Categories",
+          series: "Series",
+          sidebarToggle: "Browse",
+          siteDescription: "Notes about software engineering, systems, and things I learn.",
+        },
+        vi: {
+          home: "Trang chủ",
+          categories: "Chủ đề",
+          series: "Chuỗi bài",
+          sidebarToggle: "Duyệt",
+          siteDescription: "Ghi chú về software engineering, hệ thống, và những điều mình học được.",
+        },
+      };
+
+      function getPathLang() {
+        const path = window.location.pathname;
+        return path === "/vi" || path.startsWith("/vi/") ? "vi" : "en";
+      }
+
+      function applyPathLanguage() {
+        const currentLang = getPathLang();
+        const otherLang = currentLang === "en" ? "vi" : "en";
+        const labels = UI_LABELS[currentLang];
+
+        document.documentElement.dataset.pageLang = currentLang;
+        document.documentElement.lang = currentLang;
+
+        const homeLink = document.querySelector("[data-home-link]");
+        if (homeLink instanceof HTMLAnchorElement) {
+          homeLink.href = `/${currentLang}/`;
+          homeLink.textContent = labels.home;
+        }
+
+        const categoriesLink = document.querySelector("[data-categories-link]");
+        if (categoriesLink instanceof HTMLAnchorElement) {
+          categoriesLink.href = `/${currentLang}/categories/`;
+          categoriesLink.textContent = labels.categories;
+        }
+
+        const seriesLink = document.querySelector("[data-series-link]");
+        if (seriesLink instanceof HTMLAnchorElement) {
+          seriesLink.href = `/${currentLang}/series/`;
+          seriesLink.textContent = labels.series;
+        }
+
+        const sidebarText = document.querySelector("[data-sidebar-toggle-text]");
+        if (sidebarText instanceof HTMLElement) {
+          sidebarText.textContent = labels.sidebarToggle;
+        }
+
+        const searchRoot = document.querySelector("[data-search-root]");
+        const searchInput = document.querySelector(".site-search-input");
+        if (searchRoot instanceof HTMLElement) {
+          searchRoot.dataset.empty =
+            currentLang === "vi" ? searchRoot.dataset.emptyVi : searchRoot.dataset.emptyEn;
+        }
+        if (searchInput instanceof HTMLInputElement) {
+          searchInput.placeholder =
+            currentLang === "vi"
+              ? (searchInput.dataset.placeholderVi ?? "")
+              : (searchInput.dataset.placeholderEn ?? "");
+        }
+
+        const siteDescription = document.querySelector("[data-site-description]");
+        if (siteDescription instanceof HTMLElement) {
+          siteDescription.textContent = labels.siteDescription;
+        }
+
+        const themeToggle = document.querySelector("[data-theme-toggle]");
+        if (themeToggle instanceof HTMLButtonElement) {
+          themeToggle.dataset.labelSwitch =
+            currentLang === "vi"
+              ? themeToggle.dataset.labelSwitchVi
+              : themeToggle.dataset.labelSwitchEn;
+          themeToggle.dataset.labelAuto =
+            currentLang === "vi"
+              ? themeToggle.dataset.labelAutoVi
+              : themeToggle.dataset.labelAutoEn;
+          themeToggle.dataset.labelLight =
+            currentLang === "vi"
+              ? themeToggle.dataset.labelLightVi
+              : themeToggle.dataset.labelLightEn;
+          themeToggle.dataset.labelDark =
+            currentLang === "vi"
+              ? themeToggle.dataset.labelDarkVi
+              : themeToggle.dataset.labelDarkEn;
+        }
+
+        const langToggle = document.querySelector(".lang-toggle");
+        if (langToggle instanceof HTMLAnchorElement) {
+          langToggle.href = `/${otherLang}/`;
+          const label = otherLang === "vi" ? "Switch to Tiếng Việt" : "Switch to English";
+          langToggle.setAttribute("aria-label", label);
+          langToggle.setAttribute("title", label);
+          const text = langToggle.querySelector("span");
+          if (text) text.textContent = otherLang.toUpperCase();
+        }
+      }
+
+      if (DETECT_LANG_FROM_PATH) {
+        applyPathLanguage();
+      }
 
       function initSiteSearch() {
         const root = document.querySelector("[data-search-root]");
@@ -207,7 +367,9 @@ const searchPosts = langPosts.map((post) => ({
         }
 
         const emptyMessage = root.getAttribute("data-empty") ?? "No posts found.";
-        const posts = JSON.parse(dataEl.textContent ?? "[]");
+        const parsedPosts = JSON.parse(dataEl.textContent ?? "[]");
+        const posts =
+          dataEl.dataset.multilang === "true" ? (parsedPosts[getPathLang()] ?? []) : parsedPosts;
 
         function hideResults() {
           resultsEl.hidden = true;

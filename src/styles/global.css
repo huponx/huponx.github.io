@@ -126,6 +126,18 @@ a:hover {
   display: none;
 }
 
+.language-panel-vi {
+  display: none;
+}
+
+:root[data-page-lang="vi"] .language-panel-en {
+  display: none;
+}
+
+:root[data-page-lang="vi"] .language-panel-vi {
+  display: block;
+}
+
 .site-main {
   min-width: 0;
 }
@@ -566,11 +578,11 @@ a:hover {
   display: none;
 }
 
-:root[data-error-lang="vi"] .error-copy-en {
+:root[data-page-lang="vi"] .error-copy-en {
   display: none;
 }
 
-:root[data-error-lang="vi"] .error-copy-vi {
+:root[data-page-lang="vi"] .error-copy-vi {
   display: block;
 }
 
