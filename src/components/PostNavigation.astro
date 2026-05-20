@@ -1,0 +1,46 @@
+---
+import {
+  adjacentPosts,
+  blogPath,
+  type BlogPost,
+  type Lang,
+  ui,
+} from "@/lib/i18n";
+
+interface Props {
+  post: BlogPost;
+  posts: BlogPost[];
+}
+
+const { post, posts } = Astro.props;
+const lang = post.data.lang as Lang;
+const labels = ui[lang];
+const { previous, next } = adjacentPosts(post, posts);
+
+if (!previous && !next) {
+  return null;
+}
+---
+
+<nav class="post-navigation" aria-label="Post navigation">
+  {
+    previous ? (
+      <a class="post-navigation-link post-navigation-previous" href={blogPath(previous)}>
+        <span class="post-navigation-label">{labels.previousPost}</span>
+        <span class="post-navigation-title">{previous.data.title}</span>
+      </a>
+    ) : (
+      <span class="post-navigation-spacer" aria-hidden="true" />
+    )
+  }
+  {
+    next ? (
+      <a class="post-navigation-link post-navigation-next" href={blogPath(next)}>
+        <span class="post-navigation-label">{labels.nextPost}</span>
+        <span class="post-navigation-title">{next.data.title}</span>
+      </a>
+    ) : (
+      <span class="post-navigation-spacer" aria-hidden="true" />
+    )
+  }
+</nav>

@@ -1,0 +1,100 @@
+---
+import {
+  blogPath,
+  categoryLabels,
+  categoryPath,
+  formatPostCount,
+  postsByCategory,
+  seriesPath,
+  sortPosts,
+  type BlogPost,
+  type Category,
+  type Lang,
+  ui,
+  uniqueCategories,
+  uniqueSeries,
+} from "@/lib/i18n";
+
+interface Props {
+  posts: BlogPost[];
+  lang: Lang;
+}
+
+const { posts, lang } = Astro.props;
+const labels = ui[lang];
+const categories = uniqueCategories(posts, lang);
+const seriesList = uniqueSeries(posts, lang);
+const MAX_POSTS = 5;
+---
+
+<nav class="sidebar-stack" aria-label={labels.sidebarTitle}>
+  <section class="sidebar-block" aria-labelledby="sidebar-categories-title">
+    <h2 id="sidebar-categories-title" class="category-sidebar-title">
+      {labels.sidebarTitle}
+    </h2>
+    <div class="category-sidebar-list">
+      {
+        categories.map((category) => {
+          const categoryPosts = sortPosts(
+            postsByCategory(posts, lang, category as Category),
+          );
+          const latestPosts = categoryPosts.slice(0, MAX_POSTS);
+          const label = categoryLabels[lang][category as Category];
+
+          return (
+            <details class="category-sidebar-item">
+              <summary>
+                <span class="category-sidebar-name">{label}</span>
+                <span class="category-sidebar-count">
+                  {formatPostCount(lang, categoryPosts.length)}
+                </span>
+              </summary>
+              <div class="category-sidebar-panel">
+                <ul class="category-sidebar-posts">
+                  {
+                    latestPosts.map((post) => (
+                      <li>
+                        <a href={blogPath(post)}>
+                          <span class="category-sidebar-post-title">
+                            {post.data.title}
+                          </span>
+                          <span class="category-sidebar-post-date">
+                            {post.data.pubDate.toLocaleDateString(lang)}
+                          </span>
+                        </a>
+                      </li>
+                    ))
+                  }
+                </ul>
+                <a class="category-sidebar-view-all" href={categoryPath(lang, category as Category)}>
+                  {labels.viewAll}
+                </a>
+              </div>
+            </details>
+          );
+        })
+      }
+    </div>
+  </section>
+
+  {
+    seriesList.length > 0 && (
+      <section class="sidebar-block" aria-labelledby="sidebar-series-title">
+        <h2 id="sidebar-series-title" class="category-sidebar-title">
+          {labels.series}
+        </h2>
+        <div class="sidebar-series-list">
+          {seriesList.map((series) => (
+            <a class="sidebar-series-item" href={seriesPath(lang, series.id)}>
+              <span class="sidebar-series-name">{series.title}</span>
+              <span class="sidebar-series-meta">
+                {formatPostCount(lang, series.posts.length)} ·{" "}
+                {series.latestDate.toLocaleDateString(lang)}
+              </span>
+            </a>
+          ))}
+        </div>
+      </section>
+    )
+  }
+</nav>

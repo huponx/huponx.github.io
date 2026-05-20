@@ -1,0 +1,49 @@
+---
+import {
+  blogPath,
+  postsBySeries,
+  seriesPath,
+  type BlogPost,
+  type Lang,
+  ui,
+} from "@/lib/i18n";
+
+interface Props {
+  post: BlogPost;
+  posts: BlogPost[];
+}
+
+const { post, posts } = Astro.props;
+const lang = post.data.lang as Lang;
+const labels = ui[lang];
+const series = post.data.series;
+const seriesPosts = series ? postsBySeries(posts, lang, series.id) : [];
+---
+
+{
+  series && seriesPosts.length > 0 && (
+    <aside class="series-block" aria-labelledby="series-block-title">
+      <div class="series-block-header">
+        <p class="eyebrow">{labels.postsInSeries}</p>
+        <h2 id="series-block-title">
+          <a href={seriesPath(lang, series.id)}>{series.title}</a>
+        </h2>
+      </div>
+      <ol class="series-block-list">
+        {seriesPosts.map((seriesPost) => {
+          const isCurrent = seriesPost.id === post.id;
+          return (
+            <li class={isCurrent ? "current" : ""}>
+              <a href={blogPath(seriesPost)} aria-current={isCurrent ? "page" : undefined}>
+                <span class="series-block-part">
+                  {labels.part} {seriesPost.data.series?.order}
+                </span>
+                <span class="series-block-title">{seriesPost.data.title}</span>
+              </a>
+            </li>
+          );
+        })}
+      </ol>
+    </aside>
+  )
+}

@@ -1,0 +1,80 @@
+---
+import { getCollection } from "astro:content";
+import Pagination from "@/components/Pagination.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+  blogPath,
+  languages,
+  pageCount,
+  paginate,
+  postsBySeries,
+  POSTS_PER_PAGE,
+  type Lang,
+  ui,
+  uniqueSeries,
+} from "@/lib/i18n";
+
+export async function getStaticPaths() {
+  const allPosts = await getCollection("blog");
+
+  return languages.flatMap((lang) =>
+    uniqueSeries(allPosts, lang).flatMap((series) => {
+      const seriesPosts = postsBySeries(allPosts, lang, series.id);
+      const totalPages = pageCount(seriesPosts, POSTS_PER_PAGE);
+
+      return Array.from({ length: totalPages - 1 }, (_, index) => {
+        const currentPage = index + 2;
+        return {
+          params: { lang, series: series.id, page: String(currentPage) },
+          props: {
+            currentPage,
+            lang,
+            posts: seriesPosts,
+            series,
+            totalPages,
+          },
+        };
+      });
+    }),
+  );
+}
+
+const lang = Astro.props.lang as Lang;
+const labels = ui[lang];
+const series = Astro.props.series;
+const currentPage = Astro.props.currentPage as number;
+const totalPages = Astro.props.totalPages as number;
+const posts = paginate(Astro.props.posts, currentPage, POSTS_PER_PAGE);
+const basePath = `/${lang}/series/${series.id}/`;
+---
+
+<BaseLayout lang={lang} title={series.title}>
+  <section class="hero">
+    <p class="eyebrow">{labels.postsInSeries}</p>
+    <h1>{series.title}</h1>
+  </section>
+
+  <section class="series-detail" aria-label={series.title}>
+    <ol class="series-detail-list">
+      {
+        posts.map((post) => (
+          <li class="series-detail-item">
+            <a href={blogPath(post)}>
+              <span class="series-detail-part">
+                {labels.part} {post.data.series?.order}
+              </span>
+              <span class="series-detail-title">{post.data.title}</span>
+              <span class="series-detail-description">{post.data.description}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+  <Pagination
+    currentPage={currentPage}
+    totalPages={totalPages}
+    basePath={basePath}
+    lang={lang}
+  />
+</BaseLayout>

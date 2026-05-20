@@ -7,6 +7,10 @@ tags: ["astro", "github-pages", "static-site", "i18n"]
 lang: "vi"
 slug: "tao-blog-song-ngu-bang-astro"
 translationKey: "building-a-bilingual-astro-blog"
+series:
+  id: "astro-blog"
+  title: "Xây Dựng Blog Bằng Astro"
+  order: 1
 ---
 
 Đây là bài viết mẫu đầu tiên cho blog. Mục tiêu là có một nơi để lưu lại ghi chú kỹ thuật, dễ tìm kiếm, dễ chia sẻ, và không quá phức tạp để bảo trì.

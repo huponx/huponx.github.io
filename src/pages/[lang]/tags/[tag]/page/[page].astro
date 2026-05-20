@@ -1,0 +1,61 @@
+---
+import { getCollection } from "astro:content";
+import PostCard from "@/components/PostCard.astro";
+import Pagination from "@/components/Pagination.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+  languages,
+  pageCount,
+  paginate,
+  postsByTag,
+  POSTS_PER_PAGE,
+  sortPosts,
+  type Lang,
+  ui,
+  uniqueTags,
+} from "@/lib/i18n";
+
+export async function getStaticPaths() {
+  const allPosts = await getCollection("blog");
+
+  return languages.flatMap((lang) =>
+    uniqueTags(allPosts, lang).flatMap((tag) => {
+      const tagPosts = sortPosts(postsByTag(allPosts, lang, tag));
+      const totalPages = pageCount(tagPosts, POSTS_PER_PAGE);
+
+      return Array.from({ length: totalPages - 1 }, (_, index) => {
+        const currentPage = index + 2;
+        return {
+          params: { lang, tag, page: String(currentPage) },
+          props: { currentPage, lang, posts: tagPosts, tag, totalPages },
+        };
+      });
+    }),
+  );
+}
+
+const lang = Astro.props.lang as Lang;
+const tag = Astro.props.tag as string;
+const labels = ui[lang];
+const currentPage = Astro.props.currentPage as number;
+const totalPages = Astro.props.totalPages as number;
+const posts = paginate(Astro.props.posts, currentPage, POSTS_PER_PAGE);
+const basePath = `/${lang}/tags/${tag}/`;
+---
+
+<BaseLayout lang={lang} title={`#${tag}`}>
+  <section class="hero">
+    <p class="eyebrow">{labels.postsTagged}</p>
+    <h1>#{tag}</h1>
+  </section>
+
+  <section class="post-grid" aria-label={`${labels.postsTagged} ${tag}`}>
+    {posts.map((post) => <PostCard post={post} />)}
+  </section>
+  <Pagination
+    currentPage={currentPage}
+    totalPages={totalPages}
+    basePath={basePath}
+    lang={lang}
+  />
+</BaseLayout>

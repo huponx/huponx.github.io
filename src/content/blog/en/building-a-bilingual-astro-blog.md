@@ -7,6 +7,10 @@ tags: ["astro", "github-pages", "static-site", "i18n"]
 lang: "en"
 slug: "building-a-bilingual-astro-blog"
 translationKey: "building-a-bilingual-astro-blog"
+series:
+  id: "astro-blog"
+  title: "Building an Astro Blog"
+  order: 1
 ---
 
 This is the first sample post for the blog. The goal is to keep technical notes in a place that is easy to search, easy to share, and simple to maintain.

@@ -1,4 +1,8 @@
 ---
+import type { MarkdownHeading } from "astro";
+import PostNavigation from "@/components/PostNavigation.astro";
+import SeriesBlock from "@/components/SeriesBlock.astro";
+import TableOfContents from "@/components/TableOfContents.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import {
   blogPath,
@@ -14,17 +18,22 @@ import {
 interface Props {
   post: BlogPost;
   posts: BlogPost[];
+  headings?: MarkdownHeading[];
 }
 
-const { post, posts } = Astro.props;
+const { post, posts, headings = [] } = Astro.props;
 const lang = post.data.lang;
 const labels = ui[lang];
 const translation = findTranslation(post, posts);
-const otherLang = lang === "en" ? "vi" : "en";
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description} lang={lang}>
-  <article class="post">
+  <article
+    class="post"
+    data-code-copy-label={labels.copyCode}
+    data-code-copied-label={labels.copiedCode}
+    data-code-copy-failed-label={labels.copyCodeFailed}
+  >
     <a class="back-link" href={`/${lang}/`}>{labels.backToPosts}</a>
 
     <header class="post-header">
@@ -35,25 +44,31 @@ const otherLang = lang === "en" ? "vi" : "en";
       </p>
       <h1>{post.data.title}</h1>
       <p class="description">{post.data.description}</p>
-      <div class="post-meta">
-        <span>{labels.publishedOn} {post.data.pubDate.toLocaleDateString(lang)}</span>
-        <span>{labels.availableIn}: {languageNames[lang]}</span>
-      </div>
-      <div class="language-switcher" aria-label="Language switcher">
-        {
-          translation ? (
-            <a href={blogPath(translation)}>{languageNames[translation.data.lang]}</a>
-          ) : (
-            <span class="disabled">{labels.unavailable}</span>
-          )
-        }
-        <a href={`/${otherLang}/`}>{languageNames[otherLang]} home</a>
+      <div class="post-header-meta">
+        <div class="post-meta">
+          <span>{labels.publishedOn} {post.data.pubDate.toLocaleDateString(lang)}</span>
+        </div>
+        <div class="language-switcher" aria-label="Language switcher">
+          {
+            translation ? (
+              <a href={blogPath(translation)}>
+                {labels.availableIn}: {languageNames[translation.data.lang]}
+              </a>
+            ) : (
+              <span class="disabled">{labels.unavailable}</span>
+            )
+          }
+        </div>
       </div>
     </header>
+
+    <TableOfContents headings={headings} lang={lang} />
 
     <div class="content">
       <slot />
     </div>
+
+    <SeriesBlock post={post} posts={posts} />
 
     <footer class="tag-list" aria-label="Post tags">
       {
@@ -62,5 +77,139 @@ const otherLang = lang === "en" ? "vi" : "en";
         ))
       }
     </footer>
+
+    <PostNavigation post={post} posts={posts} />
   </article>
+
+  <button
+    class="go-to-top"
+    type="button"
+    data-go-to-top
+    hidden
+    aria-label={labels.goToTop}
+    title={labels.goToTop}
+  >
+    <span class="sr-only">{labels.goToTop}</span>
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M12 19V5M5 12l7-7 7 7" />
+    </svg>
+  </button>
+
+  <script is:inline>
+    const GO_TO_TOP_THRESHOLD = 480;
+    const GO_TO_TOP_MIN_SCROLL = 400;
+
+    function initCodeBlocks() {
+      const root = document.querySelector(".post");
+      if (!(root instanceof HTMLElement)) return;
+
+      const copyLabel = root.getAttribute("data-code-copy-label") ?? "Copy";
+      const copiedLabel = root.getAttribute("data-code-copied-label") ?? "Copied";
+      const failedLabel = root.getAttribute("data-code-copy-failed-label") ?? "Copy failed";
+
+      document.querySelectorAll(".content pre.astro-code").forEach((pre) => {
+        if (!(pre instanceof HTMLElement) || pre.dataset.codeBlockReady === "true") {
+          return;
+        }
+
+        const parent = pre.parentElement;
+        if (!parent) return;
+
+        pre.dataset.codeBlockReady = "true";
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "code-block";
+
+        const header = document.createElement("div");
+        header.className = "code-block-header";
+
+        const title = pre.getAttribute("data-title") ?? pre.getAttribute("data-language") ?? "";
+        const titleEl = document.createElement("span");
+        titleEl.className = "code-block-title";
+        titleEl.textContent = title;
+
+        const button = document.createElement("button");
+        button.className = "code-copy-button";
+        button.type = "button";
+        button.textContent = copyLabel;
+        button.setAttribute("aria-label", copyLabel);
+
+        button.addEventListener("click", async () => {
+          const code = pre.querySelector("code")?.textContent ?? "";
+
+          try {
+            await navigator.clipboard.writeText(code);
+            button.textContent = copiedLabel;
+            button.setAttribute("aria-label", copiedLabel);
+          } catch {
+            button.textContent = failedLabel;
+            button.setAttribute("aria-label", failedLabel);
+          } finally {
+            window.setTimeout(() => {
+              button.textContent = copyLabel;
+              button.setAttribute("aria-label", copyLabel);
+            }, 1600);
+          }
+        });
+
+        header.append(titleEl, button);
+        parent.insertBefore(wrapper, pre);
+        wrapper.append(header, pre);
+      });
+    }
+
+    function initGoToTop() {
+      const button = document.querySelector("[data-go-to-top]");
+      if (!(button instanceof HTMLButtonElement)) return;
+
+      let ticking = false;
+
+      function updateVisibility() {
+        const scrollY = window.scrollY;
+        const viewportHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const distanceFromBottom = documentHeight - (scrollY + viewportHeight);
+        const pageIsScrollable = documentHeight > viewportHeight + GO_TO_TOP_MIN_SCROLL;
+        const nearBottom = distanceFromBottom <= GO_TO_TOP_THRESHOLD;
+
+        if (pageIsScrollable && nearBottom) {
+          button.hidden = false;
+          button.classList.add("is-visible");
+        } else {
+          button.classList.remove("is-visible");
+          button.hidden = true;
+        }
+      }
+
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          updateVisibility();
+          ticking = false;
+        });
+      }
+
+      if (button.dataset.goToTopReady === "true") {
+        updateVisibility();
+        return;
+      }
+      button.dataset.goToTopReady = "true";
+
+      button.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll, { passive: true });
+      updateVisibility();
+    }
+
+    initCodeBlocks();
+    initGoToTop();
+    document.addEventListener("astro:page-load", () => {
+      initCodeBlocks();
+      initGoToTop();
+    });
+  </script>
 </BaseLayout>

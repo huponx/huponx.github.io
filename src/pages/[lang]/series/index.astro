@@ -1,0 +1,52 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+  languages,
+  seriesPath,
+  type Lang,
+  ui,
+  uniqueSeries,
+  formatPostCount,
+} from "@/lib/i18n";
+
+export function getStaticPaths() {
+  return languages.map((lang) => ({
+    params: { lang },
+    props: { lang },
+  }));
+}
+
+const lang = Astro.props.lang as Lang;
+const labels = ui[lang];
+const posts = await getCollection("blog");
+const seriesList = uniqueSeries(posts, lang);
+---
+
+<BaseLayout lang={lang} title={labels.allSeries}>
+  <section class="hero">
+    <h1>{labels.allSeries}</h1>
+    <p>{labels.siteDescription}</p>
+  </section>
+
+  <section class="series-grid" aria-label={labels.allSeries}>
+    {
+      seriesList.map((series) => (
+        <article class="series-card">
+          <p class="eyebrow">{formatPostCount(lang, series.posts.length)}</p>
+          <h2>
+            <a href={seriesPath(lang, series.id)}>{series.title}</a>
+          </h2>
+          <ol>
+            {series.posts.slice(0, 3).map((post) => (
+              <li>{post.data.title}</li>
+            ))}
+          </ol>
+          <a class="read-more" href={seriesPath(lang, series.id)}>
+            {labels.viewAll}
+          </a>
+        </article>
+      ))
+    }
+  </section>
+</BaseLayout>

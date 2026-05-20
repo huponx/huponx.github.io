@@ -1,0 +1,71 @@
+---
+import { getCollection } from "astro:content";
+import PostCard from "@/components/PostCard.astro";
+import Pagination from "@/components/Pagination.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+  categoryLabels,
+  languages,
+  pageCount,
+  paginate,
+  postsByCategory,
+  POSTS_PER_PAGE,
+  sortPosts,
+  type Category,
+  type Lang,
+  ui,
+  uniqueCategories,
+} from "@/lib/i18n";
+
+export async function getStaticPaths() {
+  const allPosts = await getCollection("blog");
+
+  return languages.flatMap((lang) =>
+    uniqueCategories(allPosts, lang).flatMap((category) => {
+      const categoryPosts = sortPosts(
+        postsByCategory(allPosts, lang, category),
+      );
+      const totalPages = pageCount(categoryPosts, POSTS_PER_PAGE);
+
+      return Array.from({ length: totalPages - 1 }, (_, index) => {
+        const currentPage = index + 2;
+        return {
+          params: { lang, category, page: String(currentPage) },
+          props: {
+            category,
+            currentPage,
+            lang,
+            posts: categoryPosts,
+            totalPages,
+          },
+        };
+      });
+    }),
+  );
+}
+
+const lang = Astro.props.lang as Lang;
+const category = Astro.props.category as Category;
+const labels = ui[lang];
+const currentPage = Astro.props.currentPage as number;
+const totalPages = Astro.props.totalPages as number;
+const posts = paginate(Astro.props.posts, currentPage, POSTS_PER_PAGE);
+const basePath = `/${lang}/categories/${category}/`;
+---
+
+<BaseLayout lang={lang} title={categoryLabels[lang][category]}>
+  <section class="hero">
+    <p class="eyebrow">{labels.postsInCategory}</p>
+    <h1>{categoryLabels[lang][category]}</h1>
+  </section>
+
+  <section class="post-grid" aria-label={categoryLabels[lang][category]}>
+    {posts.map((post) => <PostCard post={post} />)}
+  </section>
+  <Pagination
+    currentPage={currentPage}
+    totalPages={totalPages}
+    basePath={basePath}
+    lang={lang}
+  />
+</BaseLayout>

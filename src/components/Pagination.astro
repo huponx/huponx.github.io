@@ -1,0 +1,56 @@
+---
+import { pagePath, type Lang, ui } from "@/lib/i18n";
+
+interface Props {
+  currentPage: number;
+  totalPages: number;
+  basePath: string;
+  lang: Lang;
+}
+
+const { currentPage, totalPages, basePath, lang } = Astro.props;
+const labels = ui[lang];
+const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+
+if (totalPages <= 1) {
+  return null;
+}
+---
+
+<nav class="pagination" aria-label="Pagination">
+  {
+    currentPage > 1 ? (
+      <a class="pagination-link" href={pagePath(basePath, currentPage - 1)}>
+        {labels.previousPage}
+      </a>
+    ) : (
+      <span class="pagination-link disabled">{labels.previousPage}</span>
+    )
+  }
+
+  <div class="pagination-pages" aria-label={`${labels.pageOf} ${currentPage} ${labels.of} ${totalPages}`}>
+    {
+      pages.map((page) =>
+        page === currentPage ? (
+          <span class="pagination-page active" aria-current="page">
+            {page}
+          </span>
+        ) : (
+          <a class="pagination-page" href={pagePath(basePath, page)}>
+            {page}
+          </a>
+        ),
+      )
+    }
+  </div>
+
+  {
+    currentPage < totalPages ? (
+      <a class="pagination-link" href={pagePath(basePath, currentPage + 1)}>
+        {labels.nextPage}
+      </a>
+    ) : (
+      <span class="pagination-link disabled">{labels.nextPage}</span>
+    )
+  }
+</nav>

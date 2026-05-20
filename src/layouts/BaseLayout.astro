@@ -1,6 +1,16 @@
 ---
+import { getCollection } from "astro:content";
+import CategorySidebar from "@/components/CategorySidebar.astro";
 import "../styles/global.css";
-import { defaultLang, languageNames, type Lang, ui } from "@/lib/i18n";
+import {
+  blogPath,
+  categoryLabels,
+  defaultLang,
+  languageNames,
+  postsByLang,
+  type Lang,
+  ui,
+} from "@/lib/i18n";
 
 interface Props {
   title?: string;
@@ -14,6 +24,26 @@ const title = Astro.props.title
   ? `${Astro.props.title} | ${labels.siteTitle}`
   : labels.siteTitle;
 const description = Astro.props.description ?? labels.siteDescription;
+const otherLang = lang === "en" ? "vi" : "en";
+
+const allPosts = await getCollection("blog");
+const langPosts = postsByLang(allPosts, lang);
+const searchPosts = langPosts.map((post) => ({
+  title: post.data.title,
+  description: post.data.description,
+  category: categoryLabels[lang][post.data.category],
+  tags: post.data.tags,
+  url: blogPath(post),
+  text: [
+    post.data.title,
+    post.data.description,
+    post.data.category,
+    categoryLabels[lang][post.data.category],
+    ...post.data.tags,
+  ]
+    .join(" ")
+    .toLowerCase(),
+}));
 ---
 
 <!doctype html>
@@ -23,32 +53,309 @@ const description = Astro.props.description ?? labels.siteDescription;
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script
+      is:inline
+      data-goatcounter="https://hungp29.goatcounter.com/count"
+      async
+      src="//gc.zgo.at/count.js"
+    ></script>
+    <script is:inline>
+      (() => {
+        try {
+          const theme = localStorage.getItem("theme");
+          if (theme === "light" || theme === "dark") {
+            document.documentElement.dataset.theme = theme;
+          } else {
+            document.documentElement.removeAttribute("data-theme");
+          }
+        } catch {
+          document.documentElement.removeAttribute("data-theme");
+        }
+      })();
+    </script>
     <title>{title}</title>
   </head>
   <body>
     <header class="site-header">
       <nav class="nav container" aria-label="Primary navigation">
-        <a class="brand" href={`/${lang}/`}>{labels.siteTitle}</a>
+        <div class="nav-brand">
+          <button
+            class="sidebar-toggle"
+            type="button"
+            aria-controls="site-sidebar"
+            aria-expanded="false"
+            data-sidebar-toggle
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <span class="sr-only">{labels.sidebarToggle}</span>
+          </button>
+          <a class="brand" href={`/${lang}/`}>{labels.siteTitle}</a>
+        </div>
         <div class="nav-links">
           <a href={`/${lang}/`}>{labels.home}</a>
           <a href={`/${lang}/categories/`}>{labels.categories}</a>
-          {
-            Object.entries(languageNames).map(([code, name]) => (
-              <a class={code === lang ? "active" : ""} href={`/${code}/`}>
-                {name}
-              </a>
-            ))
-          }
+          <a href={`/${lang}/series/`}>{labels.series}</a>
+          <div
+            class="site-search"
+            data-search-root
+            data-empty={labels.searchNoResults}
+          >
+            <label class="site-search-label" for="site-search-input">
+              <span class="sr-only">{labels.searchLabel}</span>
+              <svg class="site-search-icon" aria-hidden="true" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="7" />
+                <path d="M20 20 16.5 16.5" />
+              </svg>
+              <input
+                id="site-search-input"
+                class="site-search-input"
+                type="search"
+                name="q"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder={labels.searchPlaceholder}
+              />
+            </label>
+            <div
+              class="site-search-results"
+              id="site-search-results"
+              role="listbox"
+              hidden
+            />
+          </div>
+          <button
+            class="theme-toggle"
+            type="button"
+            data-theme-toggle
+            data-theme-mode="auto"
+            data-label-switch={labels.switchTheme}
+            data-label-auto={labels.themeAuto}
+            data-label-light={labels.themeLight}
+            data-label-dark={labels.themeDark}
+            aria-label={labels.switchTheme}
+            title={labels.switchTheme}
+          >
+            <span class="sr-only" data-theme-toggle-text>{labels.switchTheme}</span>
+            <svg class="theme-icon theme-icon-auto" aria-hidden="true" viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="13" rx="2" />
+              <path d="M8 21h8M12 17v4" />
+            </svg>
+            <svg class="theme-icon theme-icon-light" aria-hidden="true" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+            </svg>
+            <svg class="theme-icon theme-icon-dark" aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M21 14.7A8.5 8.5 0 0 1 9.3 3 7 7 0 1 0 21 14.7Z" />
+            </svg>
+          </button>
+          <a
+            class="lang-toggle"
+            href={`/${otherLang}/`}
+            aria-label={`Switch to ${languageNames[otherLang]}`}
+            title={`Switch to ${languageNames[otherLang]}`}
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path
+                d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 0c2.2 2.4 3.3 5.4 3.3 9S14.2 18.6 12 21m0-18C9.8 5.4 8.7 8.4 8.7 12S9.8 18.6 12 21M3.6 9h16.8M3.6 15h16.8"
+              />
+            </svg>
+            <span>{otherLang.toUpperCase()}</span>
+          </a>
         </div>
       </nav>
     </header>
 
     <main class="container">
-      <slot />
+      <div class="site-layout">
+        <aside class="site-sidebar" id="site-sidebar" data-site-sidebar>
+          <CategorySidebar posts={langPosts} lang={lang} />
+        </aside>
+        <div class="site-main">
+          <slot />
+        </div>
+      </div>
     </main>
 
     <footer class="site-footer container">
       <p>{labels.siteDescription}</p>
     </footer>
+
+    <script
+      is:inline
+      type="application/json"
+      id="site-search-data"
+      set:html={JSON.stringify(searchPosts)}
+    />
+    <script is:inline>
+      const MAX_RESULTS = 6;
+
+      function initSiteSearch() {
+        const root = document.querySelector("[data-search-root]");
+        const dataEl = document.getElementById("site-search-data");
+        if (!root || !dataEl) return;
+
+        const input = root.querySelector(".site-search-input");
+        const resultsEl = root.querySelector(".site-search-results");
+        if (!(input instanceof HTMLInputElement) || !(resultsEl instanceof HTMLElement)) {
+          return;
+        }
+
+        const emptyMessage = root.getAttribute("data-empty") ?? "No posts found.";
+        const posts = JSON.parse(dataEl.textContent ?? "[]");
+
+        function hideResults() {
+          resultsEl.hidden = true;
+          resultsEl.innerHTML = "";
+        }
+
+        function showResults() {
+          resultsEl.hidden = false;
+        }
+
+        function renderResults(query) {
+          const normalized = query.trim().toLowerCase();
+          if (!normalized) {
+            hideResults();
+            return;
+          }
+
+          const matches = posts
+            .filter((post) => post.text.includes(normalized))
+            .slice(0, MAX_RESULTS);
+
+          showResults();
+
+          if (matches.length === 0) {
+            resultsEl.innerHTML = `<p class="site-search-empty">${emptyMessage}</p>`;
+            return;
+          }
+
+          resultsEl.innerHTML = matches
+            .map(
+              (post) => `
+                <a class="site-search-result" href="${post.url}" role="option">
+                  <span class="site-search-result-title">${post.title}</span>
+                  <span class="site-search-result-meta">${post.category}</span>
+                  <span class="site-search-result-desc">${post.description}</span>
+                </a>
+              `,
+            )
+            .join("");
+        }
+
+        input.addEventListener("input", () => renderResults(input.value));
+        input.addEventListener("focus", () => {
+          if (input.value.trim()) renderResults(input.value);
+        });
+
+        document.addEventListener("click", (event) => {
+          const target = event.target;
+          if (target instanceof Node && !root.contains(target)) hideResults();
+        });
+
+        input.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            input.value = "";
+            hideResults();
+            input.blur();
+          }
+        });
+      }
+
+      initSiteSearch();
+
+      function initSidebarToggle() {
+        const toggle = document.querySelector("[data-sidebar-toggle]");
+        const sidebar = document.querySelector("[data-site-sidebar]");
+        if (!(toggle instanceof HTMLButtonElement) || !(sidebar instanceof HTMLElement)) {
+          return;
+        }
+
+        toggle.addEventListener("click", () => {
+          const isOpen = sidebar.classList.toggle("is-open");
+          toggle.setAttribute("aria-expanded", String(isOpen));
+        });
+      }
+
+      initSidebarToggle();
+      
+      const THEME_STORAGE_KEY = "theme";
+      const THEME_MODES = ["auto", "light", "dark"];
+
+      function getStoredThemeMode() {
+        try {
+          const theme = localStorage.getItem(THEME_STORAGE_KEY);
+          return theme === "light" || theme === "dark" ? theme : "auto";
+        } catch {
+          return "auto";
+        }
+      }
+
+      function applyThemeMode(mode) {
+        if (mode === "light" || mode === "dark") {
+          document.documentElement.dataset.theme = mode;
+          try {
+            localStorage.setItem(THEME_STORAGE_KEY, mode);
+          } catch {
+            // Ignore storage failures; the current page still gets the theme.
+          }
+          return;
+        }
+
+        document.documentElement.removeAttribute("data-theme");
+        try {
+          localStorage.removeItem(THEME_STORAGE_KEY);
+        } catch {
+          // Ignore storage failures; auto mode still applies for this page.
+        }
+      }
+
+      function updateThemeToggle(toggle, mode) {
+        const label =
+          mode === "light"
+            ? toggle.dataset.labelLight
+            : mode === "dark"
+              ? toggle.dataset.labelDark
+              : toggle.dataset.labelAuto;
+        const switchLabel = toggle.dataset.labelSwitch ?? "Switch theme";
+        const text = toggle.querySelector("[data-theme-toggle-text]");
+
+        toggle.dataset.themeMode = mode;
+        toggle.setAttribute("aria-label", `${switchLabel}: ${label}`);
+        toggle.title = `${switchLabel}: ${label}`;
+
+        if (text instanceof HTMLElement && label) {
+          text.textContent = label;
+        }
+      }
+
+      function nextThemeMode(mode) {
+        const currentIndex = THEME_MODES.indexOf(mode);
+        return THEME_MODES[(currentIndex + 1) % THEME_MODES.length];
+      }
+
+      function initThemeToggle() {
+        const toggle = document.querySelector("[data-theme-toggle]");
+        if (!(toggle instanceof HTMLButtonElement)) return;
+
+        updateThemeToggle(toggle, getStoredThemeMode());
+
+        if (toggle.dataset.themeReady === "true") return;
+        toggle.dataset.themeReady = "true";
+
+        toggle.addEventListener("click", () => {
+          const mode = nextThemeMode(getStoredThemeMode());
+          applyThemeMode(mode);
+          updateThemeToggle(toggle, mode);
+        });
+      }
+
+      initThemeToggle();
+      document.addEventListener("astro:page-load", initSiteSearch);
+      document.addEventListener("astro:page-load", initSidebarToggle);
+      document.addEventListener("astro:page-load", initThemeToggle);
+    </script>
   </body>
 </html>

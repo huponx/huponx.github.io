@@ -1,10 +1,14 @@
 ---
 import { getCollection } from "astro:content";
 import PostCard from "@/components/PostCard.astro";
+import Pagination from "@/components/Pagination.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import {
   languages,
+  pageCount,
+  paginate,
   postsByTag,
+  POSTS_PER_PAGE,
   sortPosts,
   type Lang,
   ui,
@@ -25,7 +29,10 @@ export async function getStaticPaths() {
 const lang = Astro.props.lang as Lang;
 const tag = Astro.props.tag as string;
 const labels = ui[lang];
-const posts = sortPosts(postsByTag(Astro.props.posts, lang, tag));
+const allTagPosts = sortPosts(postsByTag(Astro.props.posts, lang, tag));
+const totalPages = pageCount(allTagPosts, POSTS_PER_PAGE);
+const posts = paginate(allTagPosts, 1, POSTS_PER_PAGE);
+const basePath = `/${lang}/tags/${tag}/`;
 ---
 
 <BaseLayout lang={lang} title={`#${tag}`}>
@@ -37,4 +44,10 @@ const posts = sortPosts(postsByTag(Astro.props.posts, lang, tag));
   <section class="post-grid" aria-label={`${labels.postsTagged} ${tag}`}>
     {posts.map((post) => <PostCard post={post} />)}
   </section>
+  <Pagination
+    currentPage={1}
+    totalPages={totalPages}
+    basePath={basePath}
+    lang={lang}
+  />
 </BaseLayout>
