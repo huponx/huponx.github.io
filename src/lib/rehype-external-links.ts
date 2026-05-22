@@ -1,7 +1,7 @@
 import type { Element, Root } from "hast";
 import { visit } from "unist-util-visit";
 
-const SITE_HOST = new URL("https://hupham.github.io").hostname;
+const SITE_HOST = new URL("https://hungp29.github.io").hostname;
 
 function isExternalHref(href: string): boolean {
   if (

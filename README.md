@@ -439,10 +439,10 @@ Before deploying, make sure GitHub Pages is configured correctly:
 4. Push to `main`.
 5. Open the `Actions` tab and wait for `Deploy to GitHub Pages` to finish.
 
-For a user site repository named `hupham.github.io`, the expected production URL is:
+For a user site repository named `hungp29.github.io`, the expected production URL is:
 
 ```text
-https://hupham.github.io
+https://hungp29.github.io
 ```
 
 ## Generated Folders
@@ -487,7 +487,7 @@ npm install
 
 Check:
 
-- The repository is named `hupham.github.io` for a user site.
+- The repository is named `hungp29.github.io` for a user site.
 - The workflow exists at `.github/workflows/deploy.yml`.
 - GitHub Pages source is set to `GitHub Actions`.
 - The latest workflow run in the `Actions` tab succeeded.

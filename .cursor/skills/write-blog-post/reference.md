@@ -10,7 +10,7 @@
 | Category labels | `src/lib/i18n.ts` |
 | Series roadmaps | `docs/series/` |
 
-URL pattern: `https://hupham.github.io/{lang}/blog/{slug}/`
+URL pattern: `https://hungp29.github.io/{lang}/blog/{slug}/`
 
 ## Categories
 

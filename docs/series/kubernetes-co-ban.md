@@ -5,7 +5,7 @@
 | `series.id` | `kubernetes-co-ban` |
 | `series.title` | Kubernetes từ đầu |
 | Ngôn ngữ | Tiếng Việt (`src/content/blog/vi/`) |
-| Trang series | [/vi/series/kubernetes-co-ban/](https://hupham.github.io/vi/series/kubernetes-co-ban/) |
+| Trang series | [/vi/series/kubernetes-co-ban/](https://hungp29.github.io/vi/series/kubernetes-co-ban/) |
 | Cluster demo | minikube (thống nhất cả series) |
 
 ## Trạng thái
@@ -28,8 +28,8 @@
 
 | Order | Status | Tiêu đề | Slug | URL | Phụ thuộc |
 |-------|--------|---------|------|-----|-----------|
-| 1 | `published` | Giới thiệu Kubernetes: Pod, Deployment và Service | `gioi-thieu-kubernetes` | [/vi/blog/gioi-thieu-kubernetes/](https://hupham.github.io/vi/blog/gioi-thieu-kubernetes/) | — |
-| 2 | `published` | Kiến trúc cluster Kubernetes: từ cơ bản đến tổng quan production | `kien-truc-cluster-kubernetes` | [/vi/blog/kien-truc-cluster-kubernetes/](https://hupham.github.io/vi/blog/kien-truc-cluster-kubernetes/) | 1 |
+| 1 | `published` | Giới thiệu Kubernetes: Pod, Deployment và Service | `gioi-thieu-kubernetes` | [/vi/blog/gioi-thieu-kubernetes/](https://hungp29.github.io/vi/blog/gioi-thieu-kubernetes/) | — |
+| 2 | `published` | Kiến trúc cluster Kubernetes: từ cơ bản đến tổng quan production | `kien-truc-cluster-kubernetes` | [/vi/blog/kien-truc-cluster-kubernetes/](https://hungp29.github.io/vi/blog/kien-truc-cluster-kubernetes/) | 1 |
 | 3 | `planned` | ConfigMap và Secret | `configmap-secret-kubernetes` | — | 1–2 |
 
 **Nội dung gợi ý**
