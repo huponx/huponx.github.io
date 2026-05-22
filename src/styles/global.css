@@ -1167,16 +1167,20 @@ a:hover {
 
 @media (max-width: 640px) {
   .content table {
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .content thead,
-  .content tbody,
-  .content tr {
     display: table;
     width: 100%;
+    table-layout: fixed;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .content th,
+  .content td {
+    padding: 0.55rem 0.65rem;
+    font-size: 0.88rem;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    hyphens: auto;
   }
 }
 

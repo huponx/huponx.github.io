@@ -3,15 +3,16 @@ name: write-blog-post
 description: >-
   Writes and edits Hung Blog (Astro) posts in src/content/blog with correct
   frontmatter, bilingual translationKey pairing, series metadata, and docs/series
-  roadmap updates. Use when the user asks to write a blog post, draft an article,
-  add a translation, publish a series part, or update kubernetes/series content.
+  roadmap updates, and docs/ideas backlog. Use when the user asks to write a blog
+  post, draft an article, add a translation, publish a series part, capture a
+  post idea, or update kubernetes/series content.
 ---
 
 # Write Hung Blog post
 
 Astro static blog. Posts: `src/content/blog/en/`, `src/content/blog/vi/`. Schema: `src/content.config.ts`. Full templates: [reference.md](reference.md).
 
-Apply project rules when editing: `.cursor/rules/blog-posts.mdc`, `.cursor/rules/series-roadmap.mdc`.
+Apply project rules when editing: `.cursor/rules/blog-posts.mdc`, `.cursor/rules/series-roadmap.mdc`, `.cursor/rules/blog-ideas.mdc`.
 
 ## A. Single-language post
 
@@ -44,7 +45,18 @@ Apply project rules when editing: `.cursor/rules/blog-posts.mdc`, `.cursor/rules
 4. If `series` is set: same `series.id` and `series.order`; translate `series.title`.
 5. Build validate both files.
 
-## C. Series part
+## C. New idea (backlog)
+
+```
+- [ ] Topic file chosen (e.g. docs/ideas/kubernetes.md)
+- [ ] Row added to ideas table + ## section with Gợi ý nội dung
+- [ ] status = idea (or promoted if merged into series outline)
+```
+
+1. Add to `docs/ideas/` — index: `docs/ideas/README.md`.
+2. On promote: update `docs/series/*.md` and/or start draft; set idea `status` → `promoted`, then `done` after publish.
+
+## D. Series part
 
 ```
 - [ ] Roadmap read (order, slug, dependencies, content hints)
@@ -55,17 +67,17 @@ Apply project rules when editing: `.cursor/rules/blog-posts.mdc`, `.cursor/rules
 - [ ] Optional link from previous part
 ```
 
-1. Open roadmap under `docs/series/` (index: `docs/series/README.md`).
+1. Open roadmap under `docs/series/` (index: `docs/series/README.md`). Check `docs/ideas/` for promoted outlines.
 2. Use planned `slug`, `order`, and **Nội dung gợi ý**; respect **Phụ thuộc**.
 3. Add frontmatter `series` block; start body with part N in series (see sample: `src/content/blog/vi/gioi-thieu-kubernetes.md`).
 4. After publish: update roadmap `status` → `published`, fill URL `/vi/blog/{slug}/` or `/en/blog/{slug}/`.
 5. Optionally link “next part” from the previous post.
 
-## D. Draft
+## E. Draft
 
 Use `draft: true` while composing. Drafts are excluded from listings and routes. Remind the user to remove `draft` before going live.
 
-## E. Mermaid and cache
+## F. Mermaid and cache
 
 - Diagrams: fenced block with language `mermaid` (rendered at build time).
 - First-time setup: `npm run setup:diagrams`
@@ -93,3 +105,4 @@ Details: [reference.md](reference.md).
 - [README.md](../../README.md) — Writing Blog Posts section
 - Sample post: `src/content/blog/vi/gioi-thieu-kubernetes.md`
 - Sample roadmap: `docs/series/kubernetes-co-ban.md`
+- Ideas backlog: `docs/ideas/README.md`, `docs/ideas/kubernetes.md`

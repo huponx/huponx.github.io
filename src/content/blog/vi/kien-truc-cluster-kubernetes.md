@@ -356,7 +356,7 @@ minikube status
 
 | Level | Đã nắm | Đọc tiếp trong series |
 |-------|--------|------------------------|
-| 1–2 | Cluster, thành phần, luồng `apply`, `kube-system` | **Phần 3:** ConfigMap và Secret |
+| 1–2 | Cluster, thành phần, luồng `apply`, `kube-system` | **[Phần 3](/vi/blog/configmap-secret-kubernetes/):** ConfigMap và Secret |
 | 3 — networking | CNI, DNS, Service phía sau | **Phần 4:** Ingress |
 | 3 — storage | PV, PVC, StorageClass khái niệm | **Phần 7:** StatefulSet + demo storage |
 | 3 — vận hành | HA, lỗi gợi ý | **Phần 8:** RBAC; **Phần 11:** Observability |
@@ -365,7 +365,7 @@ Bạn không cần thuộc lòng mọi controller — quan trọng là khi `kube
 
 ### Tiếp theo trong series
 
-**Phần 3** sẽ dùng **ConfigMap** và **Secret** để tách cấu hình và dữ liệu nhạy cảm khỏi image container — bước tiếp theo sau khi đã hiểu cluster chạy ở đâu và điều phối thế nào.
+**Phần 3** — [ConfigMap và Secret](/vi/blog/configmap-secret-kubernetes/): tách cấu hình và dữ liệu nhạy cảm khỏi image container, mount env/volume, và rollout khi đổi config.
 
 ### Tham khảo
 

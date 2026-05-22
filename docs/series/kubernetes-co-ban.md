@@ -30,13 +30,13 @@
 |-------|--------|---------|------|-----|-----------|
 | 1 | `published` | Giới thiệu Kubernetes: Pod, Deployment và Service | `gioi-thieu-kubernetes` | [/vi/blog/gioi-thieu-kubernetes/](https://hungp29.github.io/vi/blog/gioi-thieu-kubernetes/) | — |
 | 2 | `published` | Kiến trúc cluster Kubernetes: từ cơ bản đến tổng quan production | `kien-truc-cluster-kubernetes` | [/vi/blog/kien-truc-cluster-kubernetes/](https://hungp29.github.io/vi/blog/kien-truc-cluster-kubernetes/) | 1 |
-| 3 | `planned` | ConfigMap và Secret | `configmap-secret-kubernetes` | — | 1–2 |
+| 3 | `published` | ConfigMap và Secret | `configmap-secret-kubernetes` | [/vi/blog/configmap-secret-kubernetes/](https://hungp29.github.io/vi/blog/configmap-secret-kubernetes/) | 1–2 |
 
 **Nội dung gợi ý**
 
 - **1 (done):** kubectl, Pod, Deployment, Service, demo nginx.
 - **2 (done):** Ba level (1/2/3): cluster, control plane/worker, reconciliation, kube-system, static Pod vs Pod qua API, HA/CNI/storage tổng quan.
-- **3:** Tách config khỏi image; mount env/volume; demo app đọc config.
+- **3 (done):** Tách config khỏi image; mount env/volume + `envFrom` prefix; Secret `Opaque`; demo echoserver; rollout restart; teaser checksum/Reloader (chi tiết → idea configmap-rollout).
 
 ### Cấp 2 — Trung cấp
 
@@ -103,4 +103,12 @@ File: `src/content/blog/vi/<slug>.md`
 
 ## Ngoài series (không ép vào 12 phần)
 
+- Rollout khi ConfigMap/Secret đổi — bài riêng (planned): [configmap-rollout](../ideas/kubernetes.md#configmap-rollout)
+- External Secrets / Sealed Secrets — bài riêng (planned): [external-sealed-secrets](../ideas/kubernetes.md#external-sealed-secrets)
 - NetworkPolicy sâu, Service Mesh, multi-cluster, operators phức tạp, CKA/CKAD prep.
+
+## Ý tưởng liên quan
+
+Backlog và outline chi tiết (chưa hoặc đã promote): [docs/ideas/kubernetes.md](../ideas/kubernetes.md).
+
+Không nhầm với các dòng `planned` trong bảng roadmap — ý tưởng ở đây là bài standalone hoặc viết sau, không thêm `order` vào bảng 12 phần trừ khi bạn mở rộng series có chủ đích.

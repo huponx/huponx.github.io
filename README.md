@@ -103,6 +103,7 @@ Important files:
 - `src/pages/[lang]/`: generated routes for each language.
 - `.github/workflows/deploy.yml`: GitHub Pages deployment workflow.
 - `docs/series/`: roadmap và trạng thái bài theo chuỗi (không publish lên site).
+- `docs/ideas/`: backlog ý tưởng bài (chưa chốt series/standalone; không publish lên site).
 
 ## Series content plans
 
@@ -111,6 +112,12 @@ Kế hoạch nội dung từng chuỗi bài (order, slug, trạng thái publish)
 Ví dụ: [Kubernetes từ đầu](docs/series/kubernetes-co-ban.md) — series id `kubernetes-co-ban`, 12 phần từ cơ bản đến production.
 
 Cập nhật file roadmap khi publish bài mới trong series.
+
+## Blog post ideas
+
+Ý tưởng bài chưa hoặc mới chốt hướng viết nằm trong [`docs/ideas/`](docs/ideas/README.md).
+
+Ví dụ chủ đề K8s: [docs/ideas/kubernetes.md](docs/ideas/kubernetes.md). Khi promote ý tưởng, cập nhật `docs/series/` hoặc tạo draft trong `src/content/blog/`, rồi đổi `status` ý tưởng (`idea` → `promoted` → `done`).
 
 ## Writing Blog Posts
 

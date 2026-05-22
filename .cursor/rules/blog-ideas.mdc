@@ -1,0 +1,31 @@
+---
+description: Backlog and promote workflow for docs/ideas
+globs: docs/ideas/**/*.md
+alwaysApply: false
+---
+
+# Blog post ideas (docs/ideas)
+
+Files here are **not published** to the site — planning only.
+
+## Adding an idea
+
+1. Open the topic file (e.g. `docs/ideas/kubernetes.md`) or create one.
+2. Add a row to the table: `id`, `status` (`idea`), optional priority, title, **Liên quan** (series part or published post).
+3. Add a `## <id>` section with **Gợi ý nội dung** bullets.
+
+## Promote before writing
+
+1. Decide: **series part** (update `docs/series/*.md` outline), **standalone** post, or **merge** into existing planned part.
+2. For series: do not add new `order` to the 12-part table unless the user explicitly expands the series.
+3. Set idea `status` → `promoted`; create/update draft in `src/content/blog/` if writing starts.
+4. After publish: `status` → `done`; update series roadmap if applicable.
+
+## Status values
+
+| Status | Meaning |
+|--------|---------|
+| `idea` | Recorded only in ideas backlog |
+| `promoted` | Linked into series outline or draft in progress |
+| `done` | Published (full post or merged section) |
+| `dropped` | Will not write |
