@@ -1,0 +1,59 @@
+---
+description: Frontmatter and Markdown conventions for Hung Blog posts
+globs: src/content/blog/**/*.{md,mdx}
+alwaysApply: false
+---
+
+# Blog posts (Hung Blog)
+
+## Frontmatter (required)
+
+`title`, `description`, `pubDate` (`YYYY-MM-DD`), `category`, `tags` (kebab-case), `lang`, `slug`, `translationKey`.
+
+Optional: `updatedDate`, `series`, `draft`.
+
+- **`lang` matches folder**: `src/content/blog/en/` → `lang: "en"`, `vi/` → `lang: "vi"`.
+- **`slug` = filename** (kebab-case). URL: `/{lang}/blog/{slug}/`.
+- **`category`** — only values from `src/content.config.ts`: `claude`, `web-development`, `programming`, `devops`, `database`, `system-design`, `notes`.
+- Do not edit `content.config.ts` or `src/lib/i18n.ts` unless the user asks to add a category.
+
+## Bilingual (en + vi)
+
+Same `translationKey` on both versions; `slug` may differ per language. Translate `title`, `description`, and body. Localize `series.title`.
+
+```yaml
+# en/my-post.md
+lang: "en"
+slug: "my-post"
+translationKey: "my-post"
+# vi/bai-cua-toi.md
+lang: "vi"
+slug: "bai-cua-toi"
+translationKey: "my-post"
+```
+
+## Series (optional)
+
+```yaml
+series:
+  id: "series-id"      # same across all parts
+  title: "Series Title" # localized per lang
+  order: 1             # unique per lang + series.id; match docs/series roadmap
+```
+
+## Draft
+
+`draft: true` — excluded from public routes. Remind the user to remove `draft` before publishing.
+
+## Markdown body
+
+- Short intro before the first `##` section.
+- Fenced code blocks with a language tag; use `title="path/to/file"` for file paths.
+- Mermaid: fenced block with language `mermaid`.
+- External `https://` links open in a new tab automatically — do not add `target="_blank"` manually.
+
+## Voice (Hung Blog)
+
+- **vi**: Clear prose; **bold** key terms on first use; avoid overly long paragraphs.
+- **en**: Equivalent meaning, not word-for-word translation.
+- Technical posts: brief “why” → concepts → runnable demo/commands → “read next” for series.

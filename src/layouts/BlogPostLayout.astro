@@ -116,6 +116,8 @@ const languageSwitchHref = translation ? blogPath(translation) : undefined;
   <script is:inline>
     const GO_TO_TOP_THRESHOLD = 480;
     const GO_TO_TOP_MIN_SCROLL = 400;
+    let tocSpyObserver = null;
+    let tocSpyAbort = null;
 
     function initCodeBlocks() {
       const root = document.querySelector(".post");
@@ -223,11 +225,192 @@ const languageSwitchHref = translation ? blogPath(translation) : undefined;
       updateVisibility();
     }
 
+    function initTocScrollSpy() {
+      if (tocSpyObserver) {
+        tocSpyObserver.disconnect();
+        tocSpyObserver = null;
+      }
+      if (tocSpyAbort) {
+        tocSpyAbort.abort();
+        tocSpyAbort = null;
+      }
+
+      const tocRoot = document.querySelector(".post-toc-sidebar .toc-desktop");
+      if (!tocRoot) return;
+
+      const content = document.querySelector(".post .content");
+      if (!content) return;
+
+      const articleHeadings = [...content.querySelectorAll("h2, h3")].filter(
+        (element) => element.id,
+      );
+      if (articleHeadings.length === 0) return;
+
+      tocSpyAbort = new AbortController();
+      const { signal } = tocSpyAbort;
+      let lastActiveSectionSlug = null;
+
+      let lastH2Id = "";
+      const headingMeta = articleHeadings.map((element) => {
+        if (element.tagName === "H2") {
+          lastH2Id = element.id;
+          return { element, slug: element.id, sectionSlug: element.id };
+        }
+        return { element, slug: element.id, sectionSlug: lastH2Id };
+      });
+
+      function getSectionDetails(sectionSlug) {
+        const section = tocRoot.querySelector(
+          `[data-toc-section="${CSS.escape(sectionSlug)}"]`,
+        );
+        return section instanceof HTMLDetailsElement ? section : null;
+      }
+
+      function collapseScrollOnlySection(details) {
+        if (!(details instanceof HTMLDetailsElement)) return;
+        if (details.dataset.tocUserOpen === "true") return;
+        details.open = false;
+        delete details.dataset.tocScrollOpen;
+      }
+
+      tocRoot.querySelectorAll(".toc-section-details").forEach((details) => {
+        if (!(details instanceof HTMLDetailsElement)) return;
+
+        const summary = details.querySelector(".toc-section-summary");
+        summary?.addEventListener(
+          "pointerdown",
+          (event) => {
+            if (event.target instanceof Element && event.target.closest("[data-toc-link]")) {
+              return;
+            }
+            details.dataset.tocUserIntent = "true";
+          },
+          { signal },
+        );
+
+        details.addEventListener(
+          "toggle",
+          () => {
+            if (details.dataset.tocUserIntent !== "true") return;
+            delete details.dataset.tocUserIntent;
+
+            if (details.open) {
+              details.dataset.tocUserOpen = "true";
+              delete details.dataset.tocScrollOpen;
+            } else {
+              delete details.dataset.tocUserOpen;
+              delete details.dataset.tocScrollOpen;
+            }
+          },
+          { signal },
+        );
+      });
+
+      function applyActive(activeSlug, sectionSlug) {
+        if (lastActiveSectionSlug && lastActiveSectionSlug !== sectionSlug) {
+          collapseScrollOnlySection(getSectionDetails(lastActiveSectionSlug));
+        }
+        lastActiveSectionSlug = sectionSlug;
+
+        tocRoot.querySelectorAll("[data-toc-section]").forEach((section) => {
+          const isActiveSection =
+            section.getAttribute("data-toc-section") === sectionSlug;
+
+          section.classList.toggle("is-active-section", isActiveSection);
+
+          if (!(section instanceof HTMLDetailsElement)) return;
+
+          if (isActiveSection) {
+            section.open = true;
+            if (section.dataset.tocUserOpen !== "true") {
+              section.dataset.tocScrollOpen = "true";
+            }
+          } else if (section.dataset.tocScrollOpen === "true") {
+            collapseScrollOnlySection(section);
+          }
+        });
+
+        tocRoot.querySelectorAll("[data-toc-link]").forEach((link) => {
+          const isActive = link.getAttribute("href") === `#${activeSlug}`;
+          link.classList.toggle("is-active", isActive);
+          if (isActive) {
+            link.setAttribute("aria-current", "location");
+            const reducedMotion = window.matchMedia(
+              "(prefers-reduced-motion: reduce)",
+            ).matches;
+            link.scrollIntoView({
+              block: "nearest",
+              behavior: reducedMotion ? "auto" : "instant",
+            });
+          } else {
+            link.removeAttribute("aria-current");
+          }
+        });
+      }
+
+      const visible = new Set();
+
+      function updateActiveFromVisible() {
+        let active = headingMeta[0];
+
+        for (const meta of headingMeta) {
+          if (visible.has(meta.slug)) {
+            active = meta;
+          }
+        }
+
+        if (visible.size === 0) {
+          const offset = window.innerHeight * 0.15;
+          for (const meta of headingMeta) {
+            if (meta.element.getBoundingClientRect().top <= offset) {
+              active = meta;
+            }
+          }
+        }
+
+        applyActive(active.slug, active.sectionSlug);
+      }
+
+      tocSpyObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            const id = entry.target.id;
+            if (!id) return;
+            if (entry.isIntersecting) {
+              visible.add(id);
+            } else {
+              visible.delete(id);
+            }
+          });
+          updateActiveFromVisible();
+        },
+        { root: null, rootMargin: "-10% 0px -55% 0px", threshold: 0 },
+      );
+
+      headingMeta.forEach((meta) => tocSpyObserver.observe(meta.element));
+
+      tocRoot.querySelectorAll("[data-toc-link]").forEach((link) => {
+        link.addEventListener("click", (event) => event.stopPropagation(), { signal });
+      });
+
+      const hash = location.hash.slice(1);
+      if (hash) {
+        const meta = headingMeta.find((entry) => entry.slug === hash);
+        if (meta) {
+          applyActive(meta.slug, meta.sectionSlug);
+        }
+      } else {
+        updateActiveFromVisible();
+      }
+    }
+
     initCodeBlocks();
     initGoToTop();
+    initTocScrollSpy();
     document.addEventListener("astro:page-load", () => {
       initCodeBlocks();
       initGoToTop();
+      initTocScrollSpy();
     });
   </script>
 </BaseLayout>

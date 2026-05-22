@@ -102,6 +102,15 @@ Important files:
 - `src/content/blog/vi/`: Vietnamese posts.
 - `src/pages/[lang]/`: generated routes for each language.
 - `.github/workflows/deploy.yml`: GitHub Pages deployment workflow.
+- `docs/series/`: roadmap và trạng thái bài theo chuỗi (không publish lên site).
+
+## Series content plans
+
+Kế hoạch nội dung từng chuỗi bài (order, slug, trạng thái publish) nằm trong [`docs/series/`](docs/series/README.md).
+
+Ví dụ: [Kubernetes từ đầu](docs/series/kubernetes-co-ban.md) — series id `kubernetes-co-ban`, 12 phần từ cơ bản đến production.
+
+Cập nhật file roadmap khi publish bài mới trong series.
 
 ## Writing Blog Posts
 
@@ -174,7 +183,8 @@ Write the post content here.
 ## Section Title
 
 Use normal Markdown for headings, paragraphs, lists, links, and code blocks.
-```
+
+Links to third-party sites (for example `https://kubernetes.io`) open in a new browser tab automatically. Relative links and same-site URLs stay in the current tab.
 
 ### Vietnamese Post Template
 
@@ -222,6 +232,67 @@ export function hello() {
 ````
 
 The site renders fenced blocks with syntax highlighting and a copy button. Inline code such as `` `npm run build` `` remains styled as inline text.
+
+### Mermaid Diagrams
+
+Use a fenced code block with the `mermaid` language tag. Diagrams are rendered to static SVG at build time (no client-side JavaScript needed).
+
+````md
+```mermaid
+flowchart LR
+  A[Write post] --> B[astro build]
+  B --> C[Static SVG on GitHub Pages]
+```
+````
+
+Build requirements:
+
+- `rehype-mermaid` and `playwright` are installed as dependencies
+- Playwright Chromium must be available when running `npm run build` or `npm run dev`
+- Local setup: `npm run setup:diagrams` (or `npx playwright install --with-deps chromium`)
+- CI already installs Playwright in `.github/workflows/deploy.yml`
+
+Diagrams do not show in `npm run dev`?
+
+Astro caches rendered Markdown in `.astro/`. If you installed Playwright or enabled Mermaid after the cache was created, old entries may still be stored without diagram SVG. Fix:
+
+```bash
+npm run setup:diagrams
+rm -rf .astro
+npm run dev
+```
+
+Or use `npm run dev:fresh` to clear the cache and start dev in one step.
+
+Also make sure you are on Node `>=22.12.0` when running Astro locally.
+
+### Deleted posts still appear in dev or build
+
+Astro caches the content collection index in `.astro/` (especially `.astro/data-store.json`). If you delete Markdown files but the site still shows old posts, the cache is probably stale.
+
+Fix:
+
+```bash
+rm -rf .astro dist
+npm run dev
+```
+
+Or:
+
+```bash
+npm run dev:fresh
+```
+
+Also check:
+
+- You are running `npm run dev`, not opening old files in `dist/` directly.
+- If testing production output, run `npm run build` again after deleting posts.
+- Hard refresh the browser (or use a private window) to avoid cached HTML.
+
+See sample diagrams in:
+
+- `src/content/blog/en/github-actions-deploy.md`
+- `src/content/blog/vi/deploy-bang-github-actions.md`
 
 ### Add A Translated Version
 
@@ -368,10 +439,10 @@ Before deploying, make sure GitHub Pages is configured correctly:
 4. Push to `main`.
 5. Open the `Actions` tab and wait for `Deploy to GitHub Pages` to finish.
 
-For a user site repository named `hungp29.github.io`, the expected production URL is:
+For a user site repository named `hupham.github.io`, the expected production URL is:
 
 ```text
-https://hungp29.github.io
+https://hupham.github.io
 ```
 
 ## Generated Folders
@@ -416,7 +487,7 @@ npm install
 
 Check:
 
-- The repository is named `hungp29.github.io` for a user site.
+- The repository is named `hupham.github.io` for a user site.
 - The workflow exists at `.github/workflows/deploy.yml`.
 - GitHub Pages source is set to `GitHub Actions`.
 - The latest workflow run in the `Actions` tab succeeded.

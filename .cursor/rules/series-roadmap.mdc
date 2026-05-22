@@ -1,0 +1,30 @@
+---
+description: Planning and publish checklist for docs/series roadmaps
+globs: docs/series/**/*.md
+alwaysApply: false
+---
+
+# Series roadmaps (docs/series)
+
+Files here are **not published** to the site — planning only.
+
+## Before writing a new part
+
+1. Open the series roadmap (e.g. `docs/series/kubernetes-co-ban.md`).
+2. Read **Phụ thuộc** (dependencies) and **Nội dung gợi ý** for that `order`.
+3. Use the planned **slug** and **order** in post frontmatter (`series.order` must match the roadmap table).
+
+## On publish
+
+1. Create/update `src/content/blog/{lang}/{slug}.md` with matching `series` block.
+2. Run `npm run build` (Node ≥ 22.12).
+3. Update roadmap table: `status` → `published`, fill **URL** (e.g. `/vi/blog/{slug}/`).
+4. Optionally add a “next part” link from the previous published post.
+
+## Status values
+
+| Status | Meaning |
+|--------|---------|
+| `published` | Post exists, build OK, not `draft` |
+| `draft` | In progress or `draft: true` in frontmatter |
+| `planned` | No Markdown file yet |
