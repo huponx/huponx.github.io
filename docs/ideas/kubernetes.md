@@ -7,8 +7,9 @@ Index: [README.md](README.md). Roadmap series: [kubernetes-co-ban.md](../series/
 | id | Status | Ưu tiên | Tiêu đề (dự kiến) | Liên quan |
 |----|--------|---------|-------------------|-----------|
 | [configmap-rollout](#configmap-rollout) | `idea` | P1 | Kubernetes: khi ConfigMap thay đổi thì làm sao để Pod/Deployment rollout lại | **Standalone** — không thuộc series `kubernetes-co-ban` (viết sau) |
-| [kinds-overview](#kinds-overview) | `idea` | P2 | Kubernetes: tổng quan các Kind thường gặp | Standalone hoặc phụ lục; overlap nhẹ [phần 1](/vi/blog/gioi-thieu-kubernetes/) |
+| [kinds-overview](#kinds-overview) | `idea` | P2 | Kubernetes: tổng quan các Kind thường gặp | Standalone hoặc phụ lục; overlap nhẹ [phần 1](/vi/blog/intro-kubernetes/) |
 | [external-sealed-secrets](#external-sealed-secrets) | `idea` | P2 | Kubernetes: External Secrets và Sealed Secrets | **Standalone** — sau Secret cơ bản (series phần 3 hoặc tương đương) |
+| [rolling-update](#rolling-update) | `idea` | P2 | Kubernetes: Rolling update chi tiết trên Deployment | **Standalone** — mở rộng [phần 1](/vi/blog/intro-kubernetes/) và [phần 5](/vi/blog/probes-kubernetes/) |
 
 ---
 
@@ -71,3 +72,25 @@ Index: [README.md](README.md). Roadmap series: [kubernetes-co-ban.md](../series/
 - Không nhầm: Encryption at rest etcd (cluster-level) vs giải pháp bài này (workflow & Git).
 
 **Slug gợi ý:** `external-sealed-secrets-kubernetes`
+
+---
+
+## rolling-update
+
+**Tiêu đề:** Kubernetes: Rolling update chi tiết — strategy, trạng thái rollout và rollback
+
+**Promote:** Bài **standalone** (`category: devops`, không `series`). Phần 1 chỉ giới thiệu khái niệm; phần 5 gắn rolling update với Readiness — bài này đi sâu cơ chế Deployment, không lặp lab probe.
+
+**Gợi ý nội dung**
+
+- **ReplicaSet → Deployment:** controller thay Pod theo template mới; `kubectl rollout status/history`.
+- **`strategy.type: RollingUpdate`:** `maxSurge`, `maxUnavailable` — ví dụ số Pod theo từng bước (replicas=3, surge=1, unavailable=0).
+- **Luồng một đợt update:** Pod mới tạo → readiness pass → vào Endpoints/Service → Pod cũ terminate; diagram timeline.
+- **`minReadySeconds`**, `progressDeadlineSeconds` — rollout treo / timeout.
+- **`revisionHistoryLimit`**, ReplicaSet cũ; `kubectl rollout undo` / rollback về revision.
+- **`kubectl rollout pause` / `resume`** — canary thủ công ngắn gọn (không cần Istio/Argo Rollouts).
+- **So sánh:** `Recreate` khi nào; StatefulSet `RollingUpdate` / `OnDelete`; DaemonSet strategy (pointer, không lab sâu).
+- Demo minikube: Deployment 3 replica, đổi image/tag → `kubectl get rs,pod -w`, chỉnh `maxUnavailable` để thấy downtime vs zero-downtime.
+- Liên quan: [configmap-rollout](#configmap-rollout) (trigger rollout khi config đổi); [probes-kubernetes](/vi/blog/probes-kubernetes/) (readiness là điều kiện an toàn).
+
+**Slug gợi ý:** `rolling-update-kubernetes`

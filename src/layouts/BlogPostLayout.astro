@@ -71,8 +71,6 @@ const languageSwitchHref = translation ? blogPath(translation) : undefined;
         </div>
       </header>
 
-      {hasToc && <TableOfContents headings={headings} lang={lang} variant="mobile" />}
-
       <div class="content">
         <slot />
       </div>
@@ -98,6 +96,53 @@ const languageSwitchHref = translation ? blogPath(translation) : undefined;
       )
     }
   </div>
+
+  {
+    hasToc && (
+      <>
+        <button
+          class="toc-fab"
+          type="button"
+          data-toc-open
+          aria-label={labels.tableOfContents}
+          title={labels.tableOfContents}
+        >
+          {labels.tocFab}
+        </button>
+        <div class="toc-drawer" data-toc-drawer hidden>
+          <button
+            class="toc-drawer-backdrop"
+            type="button"
+            data-toc-close
+            tabindex="-1"
+            aria-label={labels.closeTableOfContents}
+          />
+          <div
+            class="toc-drawer-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label={labels.tableOfContents}
+            tabindex="-1"
+          >
+            <div class="toc-drawer-header">
+              <h2 class="toc-drawer-title">{labels.tableOfContents}</h2>
+              <button
+                class="toc-drawer-close"
+                type="button"
+                data-toc-close
+                aria-label={labels.closeTableOfContents}
+              >
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+            <div class="toc-drawer-body">
+              <TableOfContents headings={headings} lang={lang} variant="mobile" />
+            </div>
+          </div>
+        </div>
+      </>
+    )
+  }
 
   <button
     class="go-to-top"
@@ -235,8 +280,8 @@ const languageSwitchHref = translation ? blogPath(translation) : undefined;
         tocSpyAbort = null;
       }
 
-      const tocRoot = document.querySelector(".post-toc-sidebar .toc-desktop");
-      if (!tocRoot) return;
+      const tocRoots = [...document.querySelectorAll(".toc-desktop, .toc-mobile")];
+      if (tocRoots.length === 0) return;
 
       const content = document.querySelector(".post .content");
       if (!content) return;
@@ -260,10 +305,15 @@ const languageSwitchHref = translation ? blogPath(translation) : undefined;
       });
 
       function getSectionDetails(sectionSlug) {
-        const section = tocRoot.querySelector(
-          `[data-toc-section="${CSS.escape(sectionSlug)}"]`,
-        );
-        return section instanceof HTMLDetailsElement ? section : null;
+        for (const tocRoot of tocRoots) {
+          const section = tocRoot.querySelector(
+            `[data-toc-section="${CSS.escape(sectionSlug)}"]`,
+          );
+          if (section instanceof HTMLDetailsElement) {
+            return section;
+          }
+        }
+        return null;
       }
 
       function collapseScrollOnlySection(details) {
@@ -273,78 +323,107 @@ const languageSwitchHref = translation ? blogPath(translation) : undefined;
         delete details.dataset.tocScrollOpen;
       }
 
-      tocRoot.querySelectorAll(".toc-section-details").forEach((details) => {
-        if (!(details instanceof HTMLDetailsElement)) return;
-
-        const summary = details.querySelector(".toc-section-summary");
-        summary?.addEventListener(
-          "pointerdown",
-          (event) => {
-            if (event.target instanceof Element && event.target.closest("[data-toc-link]")) {
-              return;
-            }
-            details.dataset.tocUserIntent = "true";
-          },
-          { signal },
-        );
-
-        details.addEventListener(
-          "toggle",
-          () => {
-            if (details.dataset.tocUserIntent !== "true") return;
-            delete details.dataset.tocUserIntent;
-
-            if (details.open) {
-              details.dataset.tocUserOpen = "true";
-              delete details.dataset.tocScrollOpen;
-            } else {
-              delete details.dataset.tocUserOpen;
-              delete details.dataset.tocScrollOpen;
-            }
-          },
-          { signal },
-        );
-      });
-
-      function applyActive(activeSlug, sectionSlug) {
-        if (lastActiveSectionSlug && lastActiveSectionSlug !== sectionSlug) {
-          collapseScrollOnlySection(getSectionDetails(lastActiveSectionSlug));
-        }
-        lastActiveSectionSlug = sectionSlug;
-
-        tocRoot.querySelectorAll("[data-toc-section]").forEach((section) => {
-          const isActiveSection =
-            section.getAttribute("data-toc-section") === sectionSlug;
-
-          section.classList.toggle("is-active-section", isActiveSection);
-
-          if (!(section instanceof HTMLDetailsElement)) return;
-
-          if (isActiveSection) {
-            section.open = true;
-            if (section.dataset.tocUserOpen !== "true") {
-              section.dataset.tocScrollOpen = "true";
-            }
-          } else if (section.dataset.tocScrollOpen === "true") {
+      function collapseScrollOnlyInRoots(sectionSlug) {
+        tocRoots.forEach((tocRoot) => {
+          const section = tocRoot.querySelector(
+            `[data-toc-section="${CSS.escape(sectionSlug)}"]`,
+          );
+          if (section instanceof HTMLDetailsElement) {
             collapseScrollOnlySection(section);
           }
         });
+      }
+
+      tocRoots.forEach((tocRoot) => {
+        tocRoot.querySelectorAll(".toc-section-details").forEach((details) => {
+          if (!(details instanceof HTMLDetailsElement)) return;
+
+          const summary = details.querySelector(".toc-section-summary");
+          summary?.addEventListener(
+            "pointerdown",
+            (event) => {
+              if (event.target instanceof Element && event.target.closest("[data-toc-link]")) {
+                return;
+              }
+              details.dataset.tocUserIntent = "true";
+            },
+            { signal },
+          );
+
+          details.addEventListener(
+            "toggle",
+            () => {
+              if (details.dataset.tocUserIntent !== "true") return;
+              delete details.dataset.tocUserIntent;
+
+              if (details.open) {
+                details.dataset.tocUserOpen = "true";
+                delete details.dataset.tocScrollOpen;
+              } else {
+                delete details.dataset.tocUserOpen;
+                delete details.dataset.tocScrollOpen;
+              }
+            },
+            { signal },
+          );
+        });
 
         tocRoot.querySelectorAll("[data-toc-link]").forEach((link) => {
-          const isActive = link.getAttribute("href") === `#${activeSlug}`;
-          link.classList.toggle("is-active", isActive);
-          if (isActive) {
-            link.setAttribute("aria-current", "location");
-            const reducedMotion = window.matchMedia(
-              "(prefers-reduced-motion: reduce)",
-            ).matches;
-            link.scrollIntoView({
-              block: "nearest",
-              behavior: reducedMotion ? "auto" : "instant",
-            });
-          } else {
-            link.removeAttribute("aria-current");
-          }
+          link.addEventListener("click", (event) => event.stopPropagation(), { signal });
+        });
+      });
+
+      function shouldScrollLinkIntoView(link) {
+        const drawer = link.closest("[data-toc-drawer]");
+        if (drawer instanceof HTMLElement && !drawer.classList.contains("is-open")) {
+          return false;
+        }
+        return true;
+      }
+
+      function applyActive(activeSlug, sectionSlug) {
+        if (lastActiveSectionSlug && lastActiveSectionSlug !== sectionSlug) {
+          collapseScrollOnlyInRoots(lastActiveSectionSlug);
+        }
+        lastActiveSectionSlug = sectionSlug;
+
+        tocRoots.forEach((tocRoot) => {
+          tocRoot.querySelectorAll("[data-toc-section]").forEach((section) => {
+            const isActiveSection =
+              section.getAttribute("data-toc-section") === sectionSlug;
+
+            section.classList.toggle("is-active-section", isActiveSection);
+
+            if (!(section instanceof HTMLDetailsElement)) return;
+
+            if (isActiveSection) {
+              section.open = true;
+              if (section.dataset.tocUserOpen !== "true") {
+                section.dataset.tocScrollOpen = "true";
+              }
+            } else if (section.dataset.tocScrollOpen === "true") {
+              collapseScrollOnlySection(section);
+            }
+          });
+
+          tocRoot.querySelectorAll("[data-toc-link]").forEach((link) => {
+            const isActive = link.getAttribute("href") === `#${activeSlug}`;
+            link.classList.toggle("is-active", isActive);
+            if (isActive) {
+              link.setAttribute("aria-current", "location");
+              if (shouldScrollLinkIntoView(link)) {
+                const reducedMotion = window.matchMedia(
+                  "(prefers-reduced-motion: reduce)",
+                ).matches;
+                link.scrollIntoView({
+                  block: "nearest",
+                  behavior: reducedMotion ? "auto" : "instant",
+                });
+              }
+            } else {
+              link.removeAttribute("aria-current");
+            }
+          });
         });
       }
 
@@ -389,10 +468,6 @@ const languageSwitchHref = translation ? blogPath(translation) : undefined;
 
       headingMeta.forEach((meta) => tocSpyObserver.observe(meta.element));
 
-      tocRoot.querySelectorAll("[data-toc-link]").forEach((link) => {
-        link.addEventListener("click", (event) => event.stopPropagation(), { signal });
-      });
-
       const hash = location.hash.slice(1);
       if (hash) {
         const meta = headingMeta.find((entry) => entry.slug === hash);
@@ -404,13 +479,85 @@ const languageSwitchHref = translation ? blogPath(translation) : undefined;
       }
     }
 
+    function initMobileToc() {
+      const drawer = document.querySelector("[data-toc-drawer]");
+      const openButton = document.querySelector("[data-toc-open]");
+      if (!(drawer instanceof HTMLElement) || !(openButton instanceof HTMLButtonElement)) {
+        return;
+      }
+
+      const panel = drawer.querySelector(".toc-drawer-panel");
+      const closeTargets = drawer.querySelectorAll("[data-toc-close]");
+
+      function openDrawer() {
+        drawer.hidden = false;
+        requestAnimationFrame(() => {
+          drawer.classList.add("is-open");
+        });
+        document.body.classList.add("toc-drawer-open");
+        if (panel instanceof HTMLElement) {
+          panel.focus();
+        }
+        const activeLink = drawer.querySelector(".toc-mobile [data-toc-link].is-active");
+        if (activeLink instanceof HTMLElement) {
+          activeLink.scrollIntoView({ block: "nearest" });
+        }
+      }
+
+      function closeDrawer() {
+        drawer.classList.remove("is-open");
+        document.body.classList.remove("toc-drawer-open");
+        window.setTimeout(() => {
+          if (!drawer.classList.contains("is-open")) {
+            drawer.hidden = true;
+          }
+        }, 220);
+        openButton.focus();
+      }
+
+      if (openButton.dataset.mobileTocReady === "true") {
+        return;
+      }
+      openButton.dataset.mobileTocReady = "true";
+
+      openButton.addEventListener("click", openDrawer);
+
+      closeTargets.forEach((target) => {
+        target.addEventListener("click", closeDrawer);
+      });
+
+      drawer.querySelectorAll(".toc-mobile [data-toc-link]").forEach((link) => {
+        link.addEventListener("click", closeDrawer);
+      });
+
+      if (document.documentElement.dataset.mobileTocEscape !== "true") {
+        document.documentElement.dataset.mobileTocEscape = "true";
+        document.addEventListener("keydown", (event) => {
+          if (event.key !== "Escape") return;
+          const openDrawer = document.querySelector("[data-toc-drawer].is-open");
+          if (!(openDrawer instanceof HTMLElement)) return;
+          openDrawer.classList.remove("is-open");
+          document.body.classList.remove("toc-drawer-open");
+          window.setTimeout(() => {
+            openDrawer.hidden = true;
+          }, 220);
+          const fab = document.querySelector("[data-toc-open]");
+          if (fab instanceof HTMLButtonElement) {
+            fab.focus();
+          }
+        });
+      }
+    }
+
     initCodeBlocks();
     initGoToTop();
     initTocScrollSpy();
+    initMobileToc();
     document.addEventListener("astro:page-load", () => {
       initCodeBlocks();
       initGoToTop();
       initTocScrollSpy();
+      initMobileToc();
     });
   </script>
 </BaseLayout>

@@ -69,7 +69,7 @@ Apply project rules when editing: `.cursor/rules/blog-posts.mdc`, `.cursor/rules
 
 1. Open roadmap under `docs/series/` (index: `docs/series/README.md`). Check `docs/ideas/` for promoted outlines.
 2. Use planned `slug`, `order`, and **Nội dung gợi ý**; respect **Phụ thuộc**.
-3. Add frontmatter `series` block; start body with part N in series (see sample: `src/content/blog/vi/gioi-thieu-kubernetes.md`).
+3. Add frontmatter `series` block; start body with part N in series (see sample: `src/content/blog/vi/intro-kubernetes.md`).
 4. After publish: update roadmap `status` → `published`, fill URL `/vi/blog/{slug}/` or `/en/blog/{slug}/`.
 5. Optionally link “next part” from the previous post.
 
@@ -103,6 +103,6 @@ Details: [reference.md](reference.md).
 
 - [reference.md](reference.md) — frontmatter templates, categories, commands
 - [README.md](../../README.md) — Writing Blog Posts section
-- Sample post: `src/content/blog/vi/gioi-thieu-kubernetes.md`
+- Sample post: `src/content/blog/vi/intro-kubernetes.md`
 - Sample roadmap: `docs/series/kubernetes-co-ban.md`
 - Ideas backlog: `docs/ideas/README.md`, `docs/ideas/kubernetes.md`

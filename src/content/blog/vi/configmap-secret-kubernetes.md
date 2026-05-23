@@ -13,7 +13,7 @@ series:
   order: 3
 ---
 
-Đây là **phần 3** trong series *Kubernetes từ đầu*. Ở [phần 1](/vi/blog/gioi-thieu-kubernetes/) bạn đã deploy **Deployment** và **Service**; [phần 2](/vi/blog/kien-truc-cluster-kubernetes/) giải thích cluster lưu state qua API và etcd. Bài này tách **cấu hình** và **dữ liệu nhạy cảm** khỏi image container bằng **ConfigMap** và **Secret**.
+Đây là **phần 3** trong series *Kubernetes từ đầu*. Ở [phần 1](/vi/blog/intro-kubernetes/) bạn đã deploy **Deployment** và **Service**; [phần 2](/vi/blog/cluster-architecture-kubernetes/) giải thích cluster lưu state qua API và etcd. Bài này tách **cấu hình** và **dữ liệu nhạy cảm** khỏi image container bằng **ConfigMap** và **Secret**.
 
 ## Chuẩn bị
 
@@ -35,7 +35,7 @@ Hardcode URL, `log_level` hay password trong `Deployment` khiến mỗi môi tr�
 - **ConfigMap** — cấu hình **không nhạy cảm** (URL, file config, feature flag).
 - **Secret** — password, token, khóa API, cert (semantic **nhạy cảm**).
 
-Cả hai đều là object trong cluster (lưu qua API/etcd như [phần 2](/vi/blog/kien-truc-cluster-kubernetes/)), mount vào Pod khi container khởi động.
+Cả hai đều là object trong cluster (lưu qua API/etcd như [phần 2](/vi/blog/cluster-architecture-kubernetes/)), mount vào Pod khi container khởi động.
 
 ## ConfigMap — cấu hình không nhạy cảm
 
@@ -198,7 +198,7 @@ Nếu chỉ `patch` ConfigMap mà **không** restart, Pod cũ vẫn giữ env c�
 
 #### Bước 2 — File config (`volume` + `volumeMount`)
 
-[Phần 1](/vi/blog/gioi-thieu-kubernetes/) dùng nginx — mount file config thay vì bake vào image. Khai báo `volumes` (nguồn ConfigMap) và `volumeMounts` (gắn vào container); mỗi key trong `data` thành **một file** trong thư mục mount:
+[Phần 1](/vi/blog/intro-kubernetes/) dùng nginx — mount file config thay vì bake vào image. Khai báo `volumes` (nguồn ConfigMap) và `volumeMounts` (gắn vào container); mỗi key trong `data` thành **một file** trong thư mục mount:
 
 ```yaml title="configmap-nginx-conf.yaml"
 apiVersion: v1
@@ -522,7 +522,7 @@ Bạn đã tách config khỏi image — bước nền trước **Ingress** (exp
 
 ### Tiếp theo trong series
 
-**Phần 4** — Ingress: đưa HTTP từ ngoài vào cluster.
+**Phần 4** — [Ingress: đưa HTTP vào cluster](/vi/blog/ingress-kubernetes/): routing HTTP từ ngoài vào Service qua Ingress Controller.
 
 ### Tham khảo
 

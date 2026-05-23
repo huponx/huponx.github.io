@@ -28,8 +28,8 @@
 
 | Order | Status | Tiêu đề | Slug | URL | Phụ thuộc |
 |-------|--------|---------|------|-----|-----------|
-| 1 | `published` | Giới thiệu Kubernetes: Pod, Deployment và Service | `gioi-thieu-kubernetes` | [/vi/blog/gioi-thieu-kubernetes/](https://hungp29.github.io/vi/blog/gioi-thieu-kubernetes/) | — |
-| 2 | `published` | Kiến trúc cluster Kubernetes: từ cơ bản đến tổng quan production | `kien-truc-cluster-kubernetes` | [/vi/blog/kien-truc-cluster-kubernetes/](https://hungp29.github.io/vi/blog/kien-truc-cluster-kubernetes/) | 1 |
+| 1 | `published` | Giới thiệu Kubernetes: Pod, Deployment và Service | `intro-kubernetes` | [/vi/blog/intro-kubernetes/](https://hungp29.github.io/vi/blog/intro-kubernetes/) | — |
+| 2 | `published` | Kiến trúc cluster Kubernetes: từ cơ bản đến tổng quan production | `cluster-architecture-kubernetes` | [/vi/blog/cluster-architecture-kubernetes/](https://hungp29.github.io/vi/blog/cluster-architecture-kubernetes/) | 1 |
 | 3 | `published` | ConfigMap và Secret | `configmap-secret-kubernetes` | [/vi/blog/configmap-secret-kubernetes/](https://hungp29.github.io/vi/blog/configmap-secret-kubernetes/) | 1–2 |
 
 **Nội dung gợi ý**
@@ -42,15 +42,15 @@
 
 | Order | Status | Tiêu đề | Slug | URL | Phụ thuộc |
 |-------|--------|---------|------|-----|-----------|
-| 4 | `planned` | Ingress: đưa HTTP vào cluster | `ingress-kubernetes` | — | 1, 3 |
-| 5 | `planned` | Health check: Liveness và Readiness probe | `probes-kubernetes` | — | 1 |
+| 4 | `published` | Ingress: đưa HTTP vào cluster | `ingress-kubernetes` | [/vi/blog/ingress-kubernetes/](https://hungp29.github.io/vi/blog/ingress-kubernetes/) | 1, 3 |
+| 5 | `published` | Health check: Liveness và Readiness probe | `probes-kubernetes` | [/vi/blog/probes-kubernetes/](https://hungp29.github.io/vi/blog/probes-kubernetes/) | 1 |
 | 6 | `planned` | Requests, Limits và QoS | `resources-limits-kubernetes` | — | 1 |
 | 7 | `planned` | Storage và StatefulSet | `storage-statefulset-kubernetes` | — | 1–2 |
 
 **Nội dung gợi ý**
 
-- **4:** Ingress vs NodePort/LB; Ingress controller (minikube addon); TLS ngắn.
-- **5:** HTTP/TCP/exec probes; rolling update an toàn.
+- **4 (done):** Ingress vs ClusterIP/NodePort/LB (L7); Ingress Controller (minikube addon); lab echo + một Ingress nhiều path/Service; TLS khái niệm; rewrite path cho nginx-config.
+- **5 (done):** Liveness/Readiness/Startup; 4 handler (httpGet/tcp/exec/grpc); tham số probe; lab echo + Endpoints; liveness restart; rolling update.
 - **6:** request/limit; OOMKilled; `kubectl top`.
 - **7:** PV, PVC, StorageClass; StatefulSet vs Deployment; demo DB đơn giản.
 
@@ -105,6 +105,7 @@ File: `src/content/blog/vi/<slug>.md`
 
 - Rollout khi ConfigMap/Secret đổi — bài riêng (planned): [configmap-rollout](../ideas/kubernetes.md#configmap-rollout)
 - External Secrets / Sealed Secrets — bài riêng (planned): [external-sealed-secrets](../ideas/kubernetes.md#external-sealed-secrets)
+- Rolling update chi tiết — bài riêng (planned): [rolling-update](../ideas/kubernetes.md#rolling-update)
 - NetworkPolicy sâu, Service Mesh, multi-cluster, operators phức tạp, CKA/CKAD prep.
 
 ## Ý tưởng liên quan

@@ -5,15 +5,15 @@ pubDate: 2026-05-23
 category: "devops"
 tags: ["kubernetes", "cluster", "control-plane", "etcd", "cni", "devops"]
 lang: "vi"
-slug: "kien-truc-cluster-kubernetes"
-translationKey: "kien-truc-cluster-kubernetes"
+slug: "cluster-architecture-kubernetes"
+translationKey: "cluster-architecture-kubernetes"
 series:
   id: "kubernetes-co-ban"
   title: "Kubernetes từ đầu"
   order: 2
 ---
 
-Đây là **phần 2** trong series *Kubernetes từ đầu*. Ở [phần 1](/vi/blog/gioi-thieu-kubernetes/) bạn đã deploy **Pod**, **Deployment** và **Service**; bài này giải thích **cluster** vận hành phía sau — từ nền tảng đến tổng quan gần production.
+Đây là **phần 2** trong series *Kubernetes từ đầu*. Ở [phần 1](/vi/blog/intro-kubernetes/) bạn đã deploy **Pod**, **Deployment** và **Service**; bài này giải thích **cluster** vận hành phía sau — từ nền tảng đến tổng quan gần production.
 
 ## Lộ trình ba level trong bài
 
@@ -129,7 +129,7 @@ flowchart TB
 
 Trong Kubernetes, **node** là host tham gia cluster. **Worker node** là node nơi Pod app của bạn chạy (ví dụ nginx trong `demo`). **kubelet** và **kube-proxy** đều chạy trên **cùng mỗi worker node** — hai agent trên **cùng một node**, không phải kubelet trên worker còn kube-proxy trên chỗ khác.
 
-[Phần 1](/vi/blog/gioi-thieu-kubernetes/) giới thiệu Pod/Deployment; bài này (phần 2) đi sâu hạ tầng cluster. Ở đây ta dùng *worker node* khi nói nơi app chạy; *node* là thuật ngữ rộng hơn (mọi node trong cluster, kể cả node control plane trên production).
+[Phần 1](/vi/blog/intro-kubernetes/) giới thiệu Pod/Deployment; bài này (phần 2) đi sâu hạ tầng cluster. Ở đây ta dùng *worker node* khi nói nơi app chạy; *node* là thuật ngữ rộng hơn (mọi node trong cluster, kể cả node control plane trên production).
 
 #### Container runtime và CRI
 
@@ -141,7 +141,7 @@ Không nên nhầm với **Docker CLI** (`docker run` trên laptop): lệnh `doc
 
 **kubelet** — agent trên mỗi worker node: đăng ký node với cluster; nhận Pod được scheduler gán; qua **CRI** nhờ **container runtime** (thường containerd) kéo image và chạy container. Trạng thái Pod (`Running`, `CrashLoopBackOff`) do kubelet báo lên API.
 
-**kube-proxy** — cũng trên **mỗi worker node**, thường chạy dưới dạng **DaemonSet** (một Pod kube-proxy trên mỗi node). Nhiệm vụ: cập nhật **iptables** hoặc **IPVS** trên node để khi có request tới **Service** ClusterIP, traffic được **forward** đúng tới Pod backend. Nhờ đó lệnh `curl http://nginx` trong namespace `demo` ở [phần 1](/vi/blog/gioi-thieu-kubernetes/) mới hoạt động dù IP từng Pod thay đổi.
+**kube-proxy** — cũng trên **mỗi worker node**, thường chạy dưới dạng **DaemonSet** (một Pod kube-proxy trên mỗi node). Nhiệm vụ: cập nhật **iptables** hoặc **IPVS** trên node để khi có request tới **Service** ClusterIP, traffic được **forward** đúng tới Pod backend. Nhờ đó lệnh `curl http://nginx` trong namespace `demo` ở [phần 1](/vi/blog/intro-kubernetes/) mới hoạt động dù IP từng Pod thay đổi.
 
 ### Vòng reconciliation và luồng kubectl apply
 
@@ -198,7 +198,7 @@ kubectl get pods -n kube-system -o wide
 
 #### Static Pod vs Pod qua API
 
-Ở [phần 1](/vi/blog/gioi-thieu-kubernetes/), Pod nginx là kiểu **Pod qua API**: bạn `kubectl apply` → object lưu trong etcd → scheduler gán node → kubelet chạy container.
+Ở [phần 1](/vi/blog/intro-kubernetes/), Pod nginx là kiểu **Pod qua API**: bạn `kubectl apply` → object lưu trong etcd → scheduler gán node → kubelet chạy container.
 
 **Static Pod** là cách khác: kubelet **đọc file manifest trên chính node** (thư mục như `/etc/kubernetes/manifests/`) và tự chạy container, **không** cần bạn tạo Deployment hay scheduler gán. API server vẫn **phản chiếu** (mirror) Pod đó lên cluster để `kubectl get pods` thấy được — thường có `-<tên-node>` trong tên Pod.
 

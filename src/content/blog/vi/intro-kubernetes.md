@@ -5,8 +5,8 @@ pubDate: 2026-05-22
 category: "devops"
 tags: ["kubernetes", "kubectl", "devops", "containers"]
 lang: "vi"
-slug: "gioi-thieu-kubernetes"
-translationKey: "gioi-thieu-kubernetes"
+slug: "intro-kubernetes"
+translationKey: "intro-kubernetes"
 series:
   id: "kubernetes-co-ban"
   title: "Kubernetes từ đầu"
@@ -43,7 +43,7 @@ Ba đơn vị workload trong bài này:
 - **Deployment** — giữ số bản sao Pod, cập nhật có kiểm soát.
 - **Service** — điểm truy cập ổn định tới nhóm Pod.
 
-Muốn hiểu từng thành phần control plane, networking và storage? Đọc [phần 2: Kiến trúc cluster](/vi/blog/kien-truc-cluster-kubernetes/).
+Muốn hiểu từng thành phần control plane, networking và storage? Đọc [phần 2: Kiến trúc cluster](/vi/blog/cluster-architecture-kubernetes/).
 
 ## Chuẩn bị: kubectl và minikube
 
@@ -194,7 +194,7 @@ Bạn đã có “quick win” đầu tiên trên K8s: khai báo app bằng YAML
 
 ### Tiếp theo trong series
 
-**Phần 2** — [Kiến trúc cluster Kubernetes](/vi/blog/kien-truc-cluster-kubernetes/): API server, etcd, scheduler, kubelet, networking và storage theo ba level từ cơ bản đến tổng quan production.
+**Phần 2** — [Kiến trúc cluster Kubernetes](/vi/blog/cluster-architecture-kubernetes/): API server, etcd, scheduler, kubelet, networking và storage theo ba level từ cơ bản đến tổng quan production.
 
 ### Tham khảo
 

@@ -45,21 +45,9 @@ const tocSections = groupTocSections(tocHeadings);
 <nav class={`toc toc-${variant}`} aria-label={labels.tableOfContents}>
   {
     variant === "mobile" ? (
-      <details class="toc-details">
-        <summary class="toc-summary">{labels.tableOfContents}</summary>
-        <ol class="toc-list">
-          {tocHeadings.map((heading) => (
-            <li class={`toc-item depth-${heading.depth}`}>
-              <a href={`#${heading.slug}`}>{heading.text}</a>
-            </li>
-          ))}
-        </ol>
-      </details>
-    ) : (
-      <div class="toc-panel">
-        <h2>{labels.tableOfContents}</h2>
-        <ol class="toc-list">
-          {tocSections.map((section) => (
+      <ol class="toc-list toc-drawer-list">
+        {
+          tocSections.map((section) => (
             <li class="toc-section">
               {section.children.length > 0 ? (
                 <details class="toc-section-details" data-toc-section={section.h2.slug}>
@@ -86,7 +74,43 @@ const tocSections = groupTocSections(tocHeadings);
                 </div>
               )}
             </li>
-          ))}
+          ))
+        }
+      </ol>
+    ) : (
+      <div class="toc-panel">
+        <h2>{labels.tableOfContents}</h2>
+        <ol class="toc-list">
+          {
+            tocSections.map((section) => (
+              <li class="toc-section">
+                {section.children.length > 0 ? (
+                  <details class="toc-section-details" data-toc-section={section.h2.slug}>
+                    <summary class="toc-section-summary">
+                      <a href={`#${section.h2.slug}`} data-toc-link>
+                        {section.h2.text}
+                      </a>
+                    </summary>
+                    <ol class="toc-section-children">
+                      {section.children.map((heading) => (
+                        <li class={`toc-item depth-${heading.depth}`}>
+                          <a href={`#${heading.slug}`} data-toc-link>
+                            {heading.text}
+                          </a>
+                        </li>
+                      ))}
+                    </ol>
+                  </details>
+                ) : (
+                  <div class="toc-section-leaf" data-toc-section={section.h2.slug}>
+                    <a href={`#${section.h2.slug}`} data-toc-link>
+                      {section.h2.text}
+                    </a>
+                  </div>
+                )}
+              </li>
+            ))
+          }
         </ol>
       </div>
     )

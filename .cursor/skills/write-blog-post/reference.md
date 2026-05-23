@@ -85,8 +85,8 @@ Bilingual pair: same `translationKey`, different `slug` per language.
 ```yaml
 category: "devops"
 lang: "vi"
-slug: "gioi-thieu-kubernetes"
-translationKey: "gioi-thieu-kubernetes"
+slug: "intro-kubernetes"
+translationKey: "intro-kubernetes"
 series:
   id: "kubernetes-co-ban"
   title: "Kubernetes từ đầu"
@@ -149,7 +149,7 @@ Requires Node.js `>=22.12.0`.
 
 ## Sample files in repo
 
-- Post: `src/content/blog/vi/gioi-thieu-kubernetes.md`
+- Post: `src/content/blog/vi/intro-kubernetes.md`
 - Roadmap: `docs/series/kubernetes-co-ban.md`
 - Docs index: `docs/series/README.md`
 - Site README: `README.md` (Writing Blog Posts)
