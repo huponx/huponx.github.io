@@ -25,6 +25,8 @@ series:
 
 **Yêu cầu:** [minikube](https://minikube.sigs.k8s.io/) đang chạy (như phần 1). Có thể giữ namespace `demo` và Deployment nginx để thực hành Level 2.
 
+> Series test trên Kubernetes **1.27+** (`minikube start --kubernetes-version=v1.27.0` trở lên). Field `grpc` probe (phần 5) và `pathType` (phần 4) cần ≥ 1.27.
+
 ---
 
 ## Level 1 — Cơ bản
@@ -138,6 +140,18 @@ Trong Kubernetes, **node** là host tham gia cluster. **Worker node** là node n
 **CRI** (Container Runtime Interface — giao diện runtime container) là **cách kubelet nói chuyện với runtime**: kubelet gửi yêu cầu kiểu “chạy container từ image `nginx:1.27`”, runtime thực hiện pull image và start container. CRI là lớp chuẩn hóa — cluster có thể dùng containerd, CRI-O, v.v. mà kubelet không cần viết riêng cho từng loại.
 
 Không nên nhầm với **Docker CLI** (`docker run` trên laptop): lệnh `docker` là công cụ dev; trên node Kubernetes, kubelet gọi **containerd qua CRI**, không gọi trực tiếp daemon Docker như thời đầu. Debug trên node (nếu có quyền): `crictl ps` (tương tự `docker ps`) liệt kê container mà runtime đang chạy.
+
+#### Ba interface chuẩn: CRI, CNI, CSI
+
+CRI không đứng một mình — Kubernetes tách **ba lớp pluggable** (runtime, networking, storage) qua ba interface chuẩn để kubelet **không** phải viết code riêng cho từng nhà cung cấp:
+
+| Interface | Vai trò | Plugin phổ biến |
+|-----------|---------|-----------------|
+| **CRI** (Container Runtime Interface) | kubelet ↔ runtime container | containerd, CRI-O |
+| **CNI** (Container Network Interface) | kubelet ↔ networking Pod (gán IP, route) | Calico, Cilium, Flannel |
+| **CSI** (Container Storage Interface) | kubelet ↔ storage backend (mount volume) | EBS, GCE PD, Ceph, Longhorn |
+
+Cluster mới có thể chọn runtime, CNI và CSI driver khác nhau mà không cần đổi K8s. CNI sẽ gặp lại ở phần [networking trong Level 3](#networking--sau-hậu-trường-service); CSI ở phần 7 (StatefulSet và storage).
 
 **kubelet** — agent trên mỗi worker node: đăng ký node với cluster; nhận Pod được scheduler gán; qua **CRI** nhờ **container runtime** (thường containerd) kéo image và chạy container. Trạng thái Pod (`Running`, `CrashLoopBackOff`) do kubelet báo lên API.
 

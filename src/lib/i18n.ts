@@ -3,7 +3,7 @@ import type { CollectionEntry } from "astro:content";
 export const languages = ["en", "vi"] as const;
 export type Lang = (typeof languages)[number];
 
-export const defaultLang: Lang = "en";
+export const defaultLang: Lang = "vi";
 
 export const languageNames: Record<Lang, string> = {
   en: "English",

@@ -25,6 +25,8 @@ kubectl create namespace demo --dry-run=client -o yaml | kubectl apply -f -
 kubectl config set-context --current --namespace=demo
 ```
 
+> Series test trên Kubernetes **1.27+** (`minikube start --kubernetes-version=v1.27.0` trở lên). Field `grpc` probe (phần 5) và `pathType` (phần 4) cần ≥ 1.27.
+
 Các manifest dưới đây dùng `namespace: demo` trừ khi ghi chú khác.
 
 ## Vì sao không nhét config vào image?
@@ -269,7 +271,7 @@ Kết quả mong đợi: `Config from ConfigMap volume`. Image nginx mặc đị
 | `kubectl get` | Thường thấy giá trị | Ẩn giá trị (mặc định) |
 | Type | — | **`Opaque`** (generic; mặc định) |
 
-**`type: Opaque`** — loại **generic** (mặc định nếu bỏ `type`): cặp key/value **tùy ý** do bạn định nghĩa. Khác `kubernetes.io/tls` (cert + key cho Ingress — [phần 4](/vi/series/kubernetes-co-ban/) series) hay `kubernetes.io/dockerconfigjson` (pull image registry riêng).
+**`type: Opaque`** — loại **generic** (mặc định nếu bỏ `type`): cặp key/value **tùy ý** do bạn định nghĩa. Khác `kubernetes.io/tls` (cert + key cho Ingress — [phần 4](/vi/blog/ingress-kubernetes/)) hay `kubernetes.io/dockerconfigjson` (pull image registry riêng).
 
 Production thường dùng **External Secrets** / **Sealed Secrets** — ngoài phạm vi series này.
 
@@ -454,6 +456,46 @@ Chỉ mount **một** file (không ghi đè cả thư mục):
 ```
 
 Đổi Secret vẫn có thể cần **restart Pod** nếu app đọc file lúc khởi động — tương tự env (xem [rollout](#đổi-configmapsecret--rollout-thủ-công-và-auto)).
+
+## Hai field tiện ích: immutable và optional
+
+### immutable — khóa CM/Secret để bảo vệ và giảm tải
+
+**`immutable: true`** (K8s 1.21+) đánh dấu ConfigMap/Secret **không thể sửa nội dung**; muốn đổi phải **tạo object mới** (ví dụ `app-config-v2`) rồi update Deployment trỏ sang. Hai lợi ích:
+
+- **Giảm tải API/etcd:** kubelet thường **watch** từng CM/Secret được mount để phát hiện thay đổi. Với object `immutable`, kubelet **bỏ qua watch** — cluster lớn (hàng nghìn Pod) tiết kiệm đáng kể.
+- **An toàn:** tránh ai đó `kubectl edit configmap app-config` rồi gây rớt service.
+
+```yaml title="configmap-immutable.yaml"
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config-v2
+  namespace: demo
+immutable: true
+data:
+  message: "Frozen value"
+```
+
+Lưu ý: đã set `immutable: true` rồi **không** thể quay lại sửa — phải `kubectl delete` và tạo lại. Phù hợp với config gắn version trong tên object (`app-config-v1`, `app-config-v2`).
+
+### optional — tránh CrashLoopBackOff khi key thiếu
+
+Mặc định nếu Pod tham chiếu một ConfigMap/Secret hoặc key **không tồn tại**, container sẽ **không start** (status `CreateContainerConfigError`). Trong nhiều trường hợp, ta muốn Pod vẫn chạy với env không được set — dùng **`optional: true`** trên `configMapKeyRef`, `secretKeyRef`, `configMapRef`, hoặc `secretRef`:
+
+```yaml
+env:
+  - name: FEATURE_FLAG
+    valueFrom:
+      configMapKeyRef:
+        name: app-config
+        key: feature-x
+        optional: true
+```
+
+Khi `app-config` hoặc key `feature-x` chưa có, `FEATURE_FLAG` đơn giản không tồn tại trong container — app cần tự xử lý default.
+
+Dùng cho config **không bắt buộc** (feature flag mới, override nâng cao); **không** dùng cho password hay endpoint chính — nếu thiếu thì để Pod fail rõ ràng vẫn tốt hơn chạy với cấu hình thiếu.
 
 ## Đổi ConfigMap/Secret — rollout thủ công và auto
 

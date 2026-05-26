@@ -44,14 +44,14 @@
 |-------|--------|---------|------|-----|-----------|
 | 4 | `published` | Ingress: đưa HTTP vào cluster | `ingress-kubernetes` | [/vi/blog/ingress-kubernetes/](https://hungp29.github.io/vi/blog/ingress-kubernetes/) | 1, 3 |
 | 5 | `published` | Health check: Liveness và Readiness probe | `probes-kubernetes` | [/vi/blog/probes-kubernetes/](https://hungp29.github.io/vi/blog/probes-kubernetes/) | 1 |
-| 6 | `planned` | Requests, Limits và QoS | `resources-limits-kubernetes` | — | 1 |
+| 6 | `published` | Requests, Limits và QoS | `resources-limits-kubernetes` | [/vi/blog/resources-limits-kubernetes/](https://hungp29.github.io/vi/blog/resources-limits-kubernetes/) | 1 |
 | 7 | `planned` | Storage và StatefulSet | `storage-statefulset-kubernetes` | — | 1–2 |
 
 **Nội dung gợi ý**
 
 - **4 (done):** Ingress vs ClusterIP/NodePort/LB (L7); Ingress Controller (minikube addon); lab echo + một Ingress nhiều path/Service; TLS khái niệm; rewrite path cho nginx-config.
 - **5 (done):** Liveness/Readiness/Startup; 4 handler (httpGet/tcp/exec/grpc); tham số probe; lab echo + Endpoints; liveness restart; rolling update.
-- **6:** request/limit; OOMKilled; `kubectl top`.
+- **6 (done):** requests vs limits (CPU throttle vs OOM); QoS Guaranteed/Burstable/BestEffort + lab 3 Deployment; metrics-server; oom-demo + cpu-stress.
 - **7:** PV, PVC, StorageClass; StatefulSet vs Deployment; demo DB đơn giản.
 
 ### Cấp 3 — Nâng cao

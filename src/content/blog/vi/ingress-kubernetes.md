@@ -28,6 +28,8 @@ Nếu đã `kubectl delete namespace demo`, chạy lại checklist cuối [phầ
 kubectl config set-context --current --namespace=demo
 ```
 
+> Series test trên Kubernetes **1.27+** (`minikube start --kubernetes-version=v1.27.0` trở lên). Field `grpc` probe (phần 5) và `pathType` (phần 4) cần ≥ 1.27.
+
 ## Vì sao ClusterIP chưa đủ?
 
 [Phần 1](/vi/blog/intro-kubernetes/) và lab [phần 3](/vi/blog/configmap-secret-kubernetes/) dùng **ClusterIP**: client **trong** cluster gọi DNS `echo.demo.svc`. Từ laptop hoặc trình duyệt ngoài cluster, bạn phải `port-forward` hoặc `minikube service` — tiện học tập nhưng không phải mô hình “một URL cho user”.
@@ -137,6 +139,33 @@ Trên macOS/Linux, thêm vào `/etc/hosts` (cần quyền sudo):
 | **`ImplementationSpecific`** | Ý nghĩa do **Ingress Controller** quyết định | Lab `ingress-demo`: NGINX dùng kèm regex trong `path` và annotation `use-regex` |
 
 Trong bài: lab **Bước 1** và mẫu TLS dùng **`Prefix`**; lab **Bước 2** (rewrite) dùng **`ImplementationSpecific`** vì pattern path không thuộc hai loại chuẩn kia trên NGINX Ingress.
+
+#### defaultBackend — bắt request không match rule nào
+
+Request đến Ingress nhưng **không khớp** rule nào (sai host, path lạ) — mặc định controller trả **404**. Có thể chỉ định **`spec.defaultBackend`** để chuyển sang một Service mặc định (trang lỗi đẹp, redirect, landing…):
+
+```yaml
+spec:
+  ingressClassName: nginx
+  defaultBackend:
+    service:
+      name: not-found-page
+      port:
+        number: 80
+  rules:
+    - host: echo.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: echo
+                port:
+                  number: 80
+```
+
+Bài này **không lab** `defaultBackend` — chỉ cần biết tồn tại để xử lý 404 cho domain ở production.
 
 ### Lab — Bước 1: Một host → một Service
 
@@ -316,7 +345,7 @@ Bài này **không** lab HTTPS bắt buộc. Production thường dùng [cert-ma
 
 ## Cập nhật Ingress và debug
 
-Sửa file Ingress → `kubectl apply -f ...` — controller **reload** cấu hình proxy. Khác ConfigMap mount env ([phần 3](/vi/blog/configmap-secret-kubernetes/#đổi-configmapsecret-và-rollout)): thường **không** cần restart Deployment app.
+Sửa file Ingress → `kubectl apply -f ...` — controller **reload** cấu hình proxy. Khác ConfigMap mount env ([phần 3](/vi/blog/configmap-secret-kubernetes/#đổi-configmapsecret--rollout-thủ-công-và-auto)): thường **không** cần restart Deployment app.
 
 Khi `curl` lỗi:
 
@@ -367,6 +396,19 @@ kubectl logs -n ingress-nginx -l app.kubernetes.io/component=controller --tail=3
 | **Ingress Controller** | Thực thi quy tắc (proxy) |
 
 Bạn đã có luồng: client → **Ingress Controller** → **Service** → **Pod**, vẫn giữ mô hình declarative YAML như các phần trước.
+
+## Hướng tới Gateway API
+
+[**Gateway API**](https://gateway-api.sigs.k8s.io/) là **thế hệ kế tiếp** của Ingress (HTTPRoute đã **GA** từ K8s 1.29). Vẫn dùng được Ingress lâu dài, nhưng cluster mới hoặc microservices có traffic phức tạp nên cân nhắc.
+
+| | Ingress | Gateway API |
+|---|---------|-------------|
+| **Resource** | Một (`Ingress`) | Nhiều: `GatewayClass`, `Gateway`, `HTTPRoute`, … |
+| **Portability của annotation** | Kém — NGINX/Traefik/HAProxy mỗi loại annotation khác nhau | Cao — **field chuẩn** cho rewrite, redirect, traffic split, header match |
+| **Giao thức ngoài HTTP** | Hạn chế (chủ yếu HTTP/HTTPS) | Có **`TCPRoute`**, **`UDPRoute`**, **`GRPCRoute`** |
+| **Persona / phân quyền** | Một role làm tất cả | Tách rõ: cluster admin quản `Gateway`; team app quản `HTTPRoute` |
+
+Ingress **không** bị deprecate sớm — series này vẫn dạy Ingress vì hệ sinh thái controller (NGINX, Traefik) phổ biến và minikube hỗ trợ ngay. Khi nào cần traffic split kiểu canary, mirror request, header-based routing chuẩn portable — đó là lúc đọc Gateway API.
 
 ### Tiếp theo trong series
 

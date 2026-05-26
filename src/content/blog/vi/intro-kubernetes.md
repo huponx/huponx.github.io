@@ -31,11 +31,14 @@ Khi bạn gõ lệnh `kubectl`, request đi qua các bước sau:
 
 ```mermaid
 flowchart LR
-  kubectl[kubectl] --> api[API server]
+  kubectl[kubectl] --> api[API_server]
+  api <--> etcd[etcd]
   api --> sched[Scheduler]
   sched --> kubelet[kubelet]
   kubelet --> pod[Pod]
 ```
+
+**etcd** lưu spec/desired state của toàn bộ cluster — chi tiết ở [phần 2](/vi/blog/cluster-architecture-kubernetes/).
 
 Ba đơn vị workload trong bài này:
 
@@ -56,6 +59,8 @@ Bạn cần:
 minikube start
 kubectl cluster-info
 ```
+
+> Series test trên Kubernetes **1.27+** (`minikube start --kubernetes-version=v1.27.0` trở lên). Field `grpc` probe (phần 5) và `pathType` (phần 4) cần ≥ 1.27.
 
 Các lệnh hữu ích để làm quen:
 
@@ -132,6 +137,8 @@ kubectl scale deployment/nginx --replicas=3
 ## Service — truy cập ổn định
 
 Pod có IP riêng và thay đổi khi restart. **Service** cung cấp tên DNS và IP ảo (ClusterIP) trỏ tới tập Pod theo **label** (`app: nginx`).
+
+**Labels** là cặp key/value gắn trên object (ví dụ `app: nginx`). Service **không** bind theo tên Pod (vì Pod được tạo lại sẽ đổi tên/IP) mà **lọc Pod theo label selector** — bất kỳ Pod nào có nhãn khớp `selector` của Service đều được nhận traffic. Đây là pattern xuyên suốt K8s: Deployment, ReplicaSet, NetworkPolicy… đều tìm Pod qua selector.
 
 Loại Service phổ biến:
 

@@ -26,6 +26,8 @@ Nếu đã xóa namespace, chạy lại checklist cuối [phần 3](/vi/blog/con
 kubectl config set-context --current --namespace=demo
 ```
 
+> Series test trên Kubernetes **1.27+** (`minikube start --kubernetes-version=v1.27.0` trở lên). Field `grpc` probe (phần 5) và `pathType` (phần 4) cần ≥ 1.27.
+
 ## Vì sao cần probe?
 
 Trạng thái container **Running** chỉ có nghĩa process trong container đang chạy — **không** đảm bảo app đã listen port, kết nối DB xong, hay không bị deadlock.
@@ -197,9 +199,12 @@ kubectl get endpoints echo
 kubectl get pods -l app=echo
 ```
 
+> **Lưu ý Windows PowerShell:** inline JSON `-p='[…]'` với single quote có thể không escape đúng. Hai cách thay thế: (1) chạy lệnh trong WSL/Git Bash; (2) lưu patch ra file `.json` rồi `kubectl patch deployment echo --type=json --patch-file patch.json`.
+
 Pod mới **NotReady** → **Endpoints** có thể chỉ còn Pod cũ (hoặc rỗng nếu tất cả đã rollout). `curl` qua Service chỉ tới Pod Ready:
 
 ```bash
+# FQDN echo.demo.svc resolve được vì curl Pod chạy trong cluster (CoreDNS — xem phần 2).
 kubectl run curl --rm -it --restart=Never --image=curlimages/curl -- \
   curl -s -o /dev/null -w "%{http_code}\n" http://echo.demo.svc
 ```
@@ -256,6 +261,45 @@ Trong lúc rollout, `kubectl get endpoints echo` — IP Pod đổi dần; số e
 Khác [phần 3](/vi/blog/configmap-secret-kubernetes/): đổi ConfigMap/Secret **không** tự tạo Pod mới — đổi **probe** hoặc `spec.template` trong Deployment **có** trigger rollout (như các patch trên).
 
 `maxSurge` / `maxUnavailable` — chỉnh tốc độ thay Pod; bài này không lab sâu.
+
+## Graceful shutdown — đừng rớt request khi Pod terminate
+
+Khi Pod bị terminate (rolling update, scale down, drain node), Kubernetes gửi tín hiệu **SIGTERM** cho container và chờ tối đa **`terminationGracePeriodSeconds`** (mặc định **30s**) rồi mới gửi **SIGKILL**.
+
+Vấn đề thường gặp: app dừng **ngay lập tức** khi nhận SIGTERM → request đang xử lý dở **rớt** (client thấy lỗi); đồng thời **Endpoints** controller cập nhật **không** tức thì — vài giây sau Service/Ingress vẫn route request **mới** vào Pod sắp chết → **502/connection reset**.
+
+Hai field giảm rớt request — thêm vào `spec.template.spec`:
+
+```yaml title="deployment-echo-graceful.yaml" {3-9}
+spec:
+  template:
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: echo
+          image: registry.k8s.io/e2e-test-images/echoserver:2.5
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 10"]
+```
+
+Luồng terminate chi tiết:
+
+1. Kubernetes đánh dấu Pod **`Terminating`** → **Endpoints controller** bỏ Pod khỏi Endpoints → Service/Ingress dừng route request **mới** (sau vài giây propagation tới mọi node).
+2. Kubernetes chạy **`preStop`** hook trước SIGTERM — `sleep 10` mua thời gian để propagation Endpoints xong và LB ngoài cluster cập nhật.
+3. Kubernetes gửi **SIGTERM** cho process PID 1 — app cần **catch** signal, **stop accept** connection mới, **hoàn tất** request đang xử lý, rồi exit 0.
+4. Sau `terminationGracePeriodSeconds` (60s ở đây) nếu container vẫn chưa exit — Kubernetes gửi **SIGKILL** (force kill).
+
+**App nên làm:**
+
+- **Catch SIGTERM** (Node.js: `process.on('SIGTERM', ...)`; Go: `signal.Notify`; Spring Boot: bật `server.shutdown=graceful`).
+- **Drain** request đang xử lý trong `terminationGracePeriodSeconds - preStop` (ở ví dụ: 60s − 10s = 50s).
+- Đừng bắt buộc `preStop sleep` nếu app **đã** drain tốt; nó là tấm đệm khi không sửa được code app.
+
+### Pod Disruption Budget (PDB) — nhắc ngắn
+
+Khi drain node (`kubectl drain`) hoặc rolling update cùng lúc nhiều node, **PDB** đảm bảo **số Pod tối thiểu** vẫn Ready trong namespace. Đây là khái niệm vận hành — series tách riêng ở phần observability/HA sau. Bài 5 chỉ cần biết `preStop` + `terminationGracePeriodSeconds` xử lý ở **mức Pod**; PDB ở **mức Deployment/cluster**.
 
 ## Startup probe — giới thiệu ngắn
 
@@ -315,7 +359,7 @@ Bạn đã nối health check Pod với **Service**, **Ingress**, và **rolling 
 
 ### Tiếp theo trong series
 
-**Phần 6** — Requests, Limits và QoS (`resources-limits-kubernetes`): cấp CPU/memory cho container và hành vi khi thiếu tài nguyên.
+**Phần 6** — [Requests, Limits và QoS](/vi/blog/resources-limits-kubernetes/): cấp CPU/memory, QoS class, OOMKilled và `kubectl top`.
 
 ### Tham khảo
 
